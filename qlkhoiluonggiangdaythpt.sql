@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS nhiemvu;
 DROP TABLE IF EXISTS giuchucvu;
 DROP TABLE IF EXISTS chucvu;
 DROP TABLE IF EXISTS taikhoan;
+DROP TABLE IF EXISTS quyen;
 DROP TABLE IF EXISTS giaovien;
 DROP TABLE IF EXISTS tobomon;
 DROP TABLE IF EXISTS namhoc;
@@ -29,23 +30,20 @@ CREATE TABLE hocky (
 )ENGINE=InnoDB;
 
 INSERT INTO hocky (HK_HocKy, HK_SoTuan) VALUES 
-('1', 20),  -- Học kỳ 1 có 20 tuần
-('2', 19);  -- Học kỳ 2 có 19 tuần
+('1', 20),  -- Học kỳ 1 có 18 tuần
+('2', 19);  -- Học kỳ 2 có 17 tuần
 
 
 CREATE TABLE namhoc (
   NH_NamHoc char(9) NOT NULL,
   NH_SoTietChuan int NOT NULL,
+  NH_NgayDauNam date NOT NULL,
   PRIMARY KEY (NH_NamHoc)
 )ENGINE=InnoDB;
 
-INSERT INTO namhoc (NH_NamHoc, NH_SoTietChuan) VALUES 
-('2019-2020', 1000),
-('2020-2021', 1000),
-('2021-2022', 1000),
-('2022-2023', 1000),
-('2023-2024', 1000),
-('2024-2025', 1000);
+INSERT INTO namhoc (NH_NamHoc, NH_SoTietChuan, NH_NgayDauNam) VALUES
+('2023-2024', 1000, '2023-09-04'),
+('2024-2025', 1000, '2024-09-02');
 
 
 CREATE TABLE tobomon (
@@ -122,56 +120,77 @@ INSERT INTO giaovien (GV_Ma, GV_HoTen, GV_NgaySinh, GV_GioiTinh, GV_SoDT, GV_Mai
 ('GV027', 'Trịnh Thị A1', '1984-10-15', 1, '0912345696', 'vana27@example.com', '789 Đường A1', 'BM007'),
 ('GV028', 'Đoàn Văn B2', '1985-11-20', 0, '0912345697', 'vanb28@example.com', '890 Đường B2', 'BM007');
 
-
-CREATE TABLE taikhoan (
-  GV_Ma char(5) NOT NULL,
-  TK_MatKhau varchar(16) NOT NULL,
-  PRIMARY KEY (GV_Ma),
-  FOREIGN KEY (GV_Ma) REFERENCES giaovien (GV_Ma) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE quyen (
+  Q_Ma char(5) NOT NULL,
+  Q_Ten varchar(50) NOT NULL,
+  PRIMARY KEY (Q_Ma)
 )ENGINE=InnoDB;
 
-INSERT INTO taikhoan (GV_Ma, TK_MatKhau) VALUES
+INSERT INTO quyen (Q_Ma, Q_Ten) VALUES 
+('Q0001', 'Quản Trị Viên'),
+('Q0002', 'Hiệu Trưởng'),
+('Q0003', 'Phó Hiệu Trưởng Chuyên Môn'),
+('Q0004', 'Tổ Trưởng Bộ Môn'),
+('Q0005', 'Giáo Viên');
+
+
+CREATE TABLE taikhoan (
+  TK_Ma char(5) NOT NULL,
+  TK_Ten varchar(50) NOT NULL,
+  TK_MatKhau varchar(16) NOT NULL,
+  GV_Ma char(5) NOT NULL,
+  Q_Ma char(5) NOT NULL,
+  PRIMARY KEY (TK_Ma),
+  FOREIGN KEY (GV_Ma) REFERENCES giaovien (GV_Ma) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (Q_Ma) REFERENCES quyen (Q_Ma) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+INSERT INTO taikhoan (TK_Ma, TK_Ten, TK_MatKhau, GV_Ma, Q_Ma) VALUES
+-- Admin
+('TK001', 'admin01', 'admin001', 'GV001', 'Q0001'),
+('TK002', 'admin02', 'admin002', 'GV003', 'Q0001'),
+
 -- Toán Học - Tin Học
-('GV001', 'matkhau001'),
-('GV002', 'matkhau002'),
-('GV003', 'matkhau003'),
-('GV004', 'matkhau004'),
-('GV005', 'matkhau005'),
+('TK003', 'giaovien01', 'matkhau001', 'GV001', 'Q0002'),
+('TK004', 'giaovien02', 'matkhau002', 'GV002', 'Q0004'),
+('TK005', 'giaovien03', 'matkhau003', 'GV003', 'Q0005'),
+('TK006', 'giaovien04', 'matkhau004', 'GV004', 'Q0005'),
+('TK007', 'giaovien05', 'matkhau005', 'GV005', 'Q0005'),
 
 -- Ngữ Văn - Giáo Dục Công Dân
-('GV006', 'matkhau006'),
-('GV007', 'matkhau007'),
-('GV008', 'matkhau008'),
-('GV009', 'matkhau009'),
-('GV010', 'matkhau010'),
+('TK008', 'giaovien06', 'matkhau006', 'GV006', 'Q0003'),
+('TK009', 'giaovien07', 'matkhau007', 'GV007', 'Q0004'),
+('TK010', 'giaovien08', 'matkhau008', 'GV008', 'Q0005'),
+('TK011', 'giaovien09', 'matkhau009', 'GV009', 'Q0005'),
+('TK012', 'giaovien10', 'matkhau010', 'GV010', 'Q0005'),
 
 -- Ngoại Ngữ
-('GV011', 'matkhau011'),
-('GV012', 'matkhau012'),
-('GV013', 'matkhau013'),
-('GV014', 'matkhau014'),
+('TK013', 'giaovien11', 'matkhau011', 'GV011', 'Q0005'),
+('TK014', 'giaovien12', 'matkhau012', 'GV012', 'Q0004'),
+('TK015', 'giaovien13', 'matkhau013', 'GV013', 'Q0005'),
+('TK016', 'giaovien14', 'matkhau014', 'GV014', 'Q0005'),
 
 -- Lịch Sử - Địa Lý
-('GV015', 'matkhau015'),
-('GV016', 'matkhau016'),
-('GV017', 'matkhau017'),
-('GV018', 'matkhau018'),
+('TK017', 'giaovien15', 'matkhau015', 'GV015', 'Q0005'),
+('TK018', 'giaovien16', 'matkhau016', 'GV016', 'Q0004'),
+('TK019', 'giaovien17', 'matkhau017', 'GV017', 'Q0005'),
+('TK020', 'giaovien18', 'matkhau018', 'GV018', 'Q0005'),
 
 -- Vật Lí - Hoá Học
-('GV019', 'matkhau019'),
-('GV020', 'matkhau020'),
-('GV021', 'matkhau021'),
-('GV022', 'matkhau022'),
+('TK021', 'giaovien19', 'matkhau019', 'GV019', 'Q0005'),
+('TK022', 'giaovien20', 'matkhau020', 'GV020', 'Q0004'),
+('TK023', 'giaovien21', 'matkhau021', 'GV021', 'Q0005'),
+('TK024', 'giaovien22', 'matkhau022', 'GV022', 'Q0005'),
 
 -- Sinh Học - Công Nghệ
-('GV023', 'matkhau023'),
-('GV024', 'matkhau024'),
-('GV025', 'matkhau025'),
+('TK025', 'giaovien23', 'matkhau023', 'GV023', 'Q0005'),
+('TK026', 'giaovien24', 'matkhau024', 'GV024', 'Q0004'),
+('TK027', 'giaovien25', 'matkhau025', 'GV025', 'Q0005'),
 
 -- Thể Dục - Giáo Dục Quốc Phòng
-('GV026', 'matkhau026'),
-('GV027', 'matkhau027'),
-('GV028', 'matkhau028');
+('TK028', 'giaovien26', 'matkhau026', 'GV026', 'Q0004'),
+('TK029', 'giaovien27', 'matkhau027', 'GV027', 'Q0005'),
+('TK030', 'giaovien28', 'matkhau028', 'GV028', 'Q0005');
 
 
 CREATE TABLE chucvu (
@@ -1342,7 +1361,7 @@ CREATE TABLE thoikhoabieu (
 
 INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Thu, TKB_TietBD, TKB_SoTiet, TKB_Lan, TKB_NgayHieuLuc) VALUES
 ('GV001', 'MON01', '1', '10', 'A', '2023-2024', '2', 'Mon', 2, 4, '1', '2024-09-09'), -- Mon Toan
-('GV004', 'MON01', '2', '10', 'A', '2023-2024', '2', 'Mon', 2, 4, '1', '2024-09-09'),
+('GV004', 'MON01', '2', '10', 'A', '2023-2024', '2', 'Mon', 2, 4, '1', '2024-09-09'), -- HK2 - 2023-2024
 ('GV005', 'MON01', '3', '10', 'A', '2023-2024', '2', 'Mon', 2, 4, '1', '2024-09-09'),
 ('GV002', 'MON01', '1', '10', 'P', '2023-2024', '2', 'Mon', 2, 4, '1', '2024-09-09'),
 ('GV002', 'MON01', '1', '11', 'A', '2023-2024', '2', 'Tue', 1, 4, '1', '2024-09-09'),
@@ -1358,7 +1377,7 @@ INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, H
 ('GV005', 'MON01', '2', '12', 'P', '2023-2024', '2', 'Thu', 1, 4, '1', '2024-09-09'),
 
 ('GV001', 'MON13', '1', '10', 'A', '2023-2024', '2', 'Fri', 1, 1, '1', '2024-09-09'), -- Mon Tin
-('GV004', 'MON13', '2', '10', 'A', '2023-2024', '2', 'Fri', 2, 1, '1', '2024-09-09'),
+('GV004', 'MON13', '2', '10', 'A', '2023-2024', '2', 'Fri', 2, 1, '1', '2024-09-09'), -- HK2 - 2023-2024
 ('GV005', 'MON13', '3', '10', 'A', '2023-2024', '2', 'Fri', 3, 1, '1', '2024-09-09'),
 ('GV002', 'MON13', '1', '10', 'P', '2023-2024', '2', 'Fri', 4, 1, '1', '2024-09-09'),
 ('GV002', 'MON13', '1', '11', 'A', '2023-2024', '2', 'Tue', 5, 1, '1', '2024-09-09'),
@@ -1374,7 +1393,7 @@ INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, H
 ('GV005', 'MON13', '2', '12', 'P', '2023-2024', '2', 'Thu', 5, 1, '1', '2024-09-09'),
 
 ('GV001', 'MON01', '1', '11', 'A', '2024-2025', '1', 'Mon', 2, 4, '1', '2024-09-09'), -- Mon Toan
-('GV004', 'MON01', '2', '11', 'A', '2024-2025', '1', 'Mon', 2, 4, '1', '2024-09-09'),
+('GV004', 'MON01', '2', '11', 'A', '2024-2025', '1', 'Mon', 2, 4, '1', '2024-09-09'), -- HK1 - 2024-2025
 ('GV005', 'MON01', '3', '11', 'A', '2024-2025', '1', 'Mon', 2, 4, '1', '2024-09-09'),
 ('GV002', 'MON01', '1', '11', 'P', '2024-2025', '1', 'Mon', 2, 4, '1', '2024-09-09'),
 ('GV002', 'MON01', '1', '12', 'A', '2024-2025', '1', 'Tue', 1, 4, '1', '2024-09-09'),
@@ -1390,7 +1409,7 @@ INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, H
 ('GV005', 'MON01', '2', '10', 'P', '2024-2025', '1', 'Thu', 1, 4, '1', '2024-09-09'),
 
 ('GV001', 'MON13', '1', '11', 'A', '2024-2025', '1', 'Fri', 1, 1, '1', '2024-09-09'), -- Mon Tin
-('GV004', 'MON13', '2', '11', 'A', '2024-2025', '1', 'Fri', 2, 1, '1', '2024-09-09'),
+('GV004', 'MON13', '2', '11', 'A', '2024-2025', '1', 'Fri', 2, 1, '1', '2024-09-09'), -- HK1 - 2024-2025
 ('GV005', 'MON13', '3', '11', 'A', '2024-2025', '1', 'Fri', 3, 1, '1', '2024-09-09'),
 ('GV002', 'MON13', '1', '11', 'P', '2024-2025', '1', 'Fri', 4, 1, '1', '2024-09-09'),
 ('GV002', 'MON13', '1', '12', 'A', '2024-2025', '1', 'Tue', 5, 1, '1', '2024-09-09'),
@@ -1403,7 +1422,39 @@ INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, H
 ('GV004', 'MON13', '2', '10', 'A', '2024-2025', '1', 'Thu', 5, 1, '1', '2024-09-09'),
 ('GV005', 'MON13', '3', '10', 'A', '2024-2025', '1', 'Tue', 5, 1, '1', '2024-09-09'),
 ('GV005', 'MON13', '1', '10', 'P', '2024-2025', '1', 'Wed', 5, 1, '1', '2024-09-09'),
-('GV005', 'MON13', '2', '10', 'P', '2024-2025', '1', 'Thu', 5, 1, '1', '2024-09-09');
+('GV005', 'MON13', '2', '10', 'P', '2024-2025', '1', 'Thu', 5, 1, '1', '2024-09-09'),
+
+('GV001', 'MON01', '1', '11', 'A', '2024-2025', '2', 'Mon', 2, 4, '1', '2024-09-09'), -- Mon Toan
+('GV004', 'MON01', '2', '11', 'A', '2024-2025', '2', 'Mon', 2, 4, '1', '2024-09-09'), -- HK2 - 2024-2025
+('GV005', 'MON01', '3', '11', 'A', '2024-2025', '2', 'Mon', 2, 4, '1', '2024-09-09'),
+('GV002', 'MON01', '1', '11', 'P', '2024-2025', '2', 'Mon', 2, 4, '1', '2024-09-09'),
+('GV002', 'MON01', '1', '12', 'A', '2024-2025', '2', 'Tue', 1, 4, '1', '2024-09-09'),
+('GV003', 'MON01', '2', '12', 'A', '2024-2025', '2', 'Mon', 2, 4, '1', '2024-09-09'),
+('GV003', 'MON01', '3', '12', 'A', '2024-2025', '2', 'Tue', 1, 4, '1', '2024-09-09'),
+('GV003', 'MON01', '4', '12', 'A', '2024-2025', '2', 'Wed', 1, 4, '1', '2024-09-09'),
+('GV003', 'MON01', '1', '12', 'P', '2024-2025', '2', 'Thu', 1, 4, '1', '2024-09-09'),
+('GV004', 'MON01', '2', '12', 'P', '2024-2025', '2', 'Tue', 1, 4, '1', '2024-09-09'),
+('GV004', 'MON01', '1', '10', 'A', '2024-2025', '2', 'Wed', 1, 4, '1', '2024-09-09'),
+('GV004', 'MON01', '2', '10', 'A', '2024-2025', '2', 'Thu', 1, 4, '1', '2024-09-09'),
+('GV005', 'MON01', '3', '10', 'A', '2024-2025', '2', 'Tue', 1, 4, '1', '2024-09-09'),
+('GV005', 'MON01', '1', '10', 'P', '2024-2025', '2', 'Wed', 1, 4, '1', '2024-09-09'),
+('GV005', 'MON01', '2', '10', 'P', '2024-2025', '2', 'Thu', 1, 4, '1', '2024-09-09'),
+
+('GV001', 'MON13', '1', '11', 'A', '2024-2025', '2', 'Fri', 1, 1, '1', '2024-09-09'), -- Mon Tin
+('GV004', 'MON13', '2', '11', 'A', '2024-2025', '2', 'Fri', 2, 1, '1', '2024-09-09'), -- HK2 - 2024-2025
+('GV005', 'MON13', '3', '11', 'A', '2024-2025', '2', 'Fri', 3, 1, '1', '2024-09-09'),
+('GV002', 'MON13', '1', '11', 'P', '2024-2025', '2', 'Fri', 4, 1, '1', '2024-09-09'),
+('GV002', 'MON13', '1', '12', 'A', '2024-2025', '2', 'Tue', 5, 1, '1', '2024-09-09'),
+('GV003', 'MON13', '2', '12', 'A', '2024-2025', '2', 'Fri', 5, 1, '1', '2024-09-09'),
+('GV003', 'MON13', '3', '12', 'A', '2024-2025', '2', 'Tue', 5, 1, '1', '2024-09-09'),
+('GV003', 'MON13', '4', '12', 'A', '2024-2025', '2', 'Wed', 5, 1, '1', '2024-09-09'),
+('GV003', 'MON13', '1', '12', 'P', '2024-2025', '2', 'Thu', 5, 1, '1', '2024-09-09'),
+('GV004', 'MON13', '2', '12', 'P', '2024-2025', '2', 'Tue', 5, 1, '1', '2024-09-09'),
+('GV004', 'MON13', '1', '10', 'A', '2024-2025', '2', 'Wed', 5, 1, '1', '2024-09-09'),
+('GV004', 'MON13', '2', '10', 'A', '2024-2025', '2', 'Thu', 5, 1, '1', '2024-09-09'),
+('GV005', 'MON13', '3', '10', 'A', '2024-2025', '2', 'Tue', 5, 1, '1', '2024-09-09'),
+('GV005', 'MON13', '1', '10', 'P', '2024-2025', '2', 'Wed', 5, 1, '1', '2024-09-09'),
+('GV005', 'MON13', '2', '10', 'P', '2024-2025', '2', 'Thu', 5, 1, '1', '2024-09-09');
 
 CREATE TABLE congtacgiangday(
   M_Ma char(5) NOT NULL,

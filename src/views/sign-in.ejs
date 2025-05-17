@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Đăng nhập</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <h1 class="sign-in-title">Đăng nhập</h1>
+  <!-- Hiển thị thông báo lỗi nếu có -->
+  <% if (typeof errorMessage !== 'undefined') { %>
+    <p class="error-message"><%= errorMessage %></p>
+  <% } %>
+  
+  <form action="/sign-in" method="POST" class="sign-in-form">
+    <label for="account" class="label">Tên đăng nhập:</label>
+    <input type="text" id="account" name="account" required class="input-field"><br>
+
+    <label for="password" class="label">Mật khẩu:</label>
+    <input type="password" id="password" name="password" required class="input-field"><br>
+
+    <button type="submit" class="submit-btn">Đăng nhập</button>
+  </form>
+</body>
+</html>

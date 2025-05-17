@@ -1,0 +1,493 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xin Nghỉ Phép</title>
+    <!-- <link rel="stylesheet" href="/css/style.css"> -->
+</head>
+<body>
+    <%- include('navbar') %>
+    <div>
+        <fieldset class="leave-form">
+            <div class="leave-field">
+                <label>Từ ngày:</label>
+                <input type="date" id="fromDate"/>
+            </div>
+            <div class="leave-field">
+                <label>Đến ngày:</label>
+                <input type="date" id="toDate"/>
+            </div>
+            <div class="leave-field">
+                <label>Lí do:</label>
+                <input id="reason" type="text"/>
+            </div>
+            <button class="leave-btn" onclick="fetchDays()">Kiểm tra</button>
+        </fieldset>
+
+        <div id="dayList"></div>
+        <div id="classList"></div> <!-- Khu vực hiển thị lớp học -->
+        <div id="formContainer" class="leave-form-container"></div> <!-- Khu vực hiển thị form -->
+        <button id="saveAll" class="leave-btn" onclick="saveAllData()">Lưu tất cả</button>
+    </div>
+    <script>
+        const maGV = "<%= maGV %>";
+        const maBM = "<%= maBM %>";
+        async function fetchDays() {
+            reset();
+            
+            const fromDate = document.getElementById("fromDate").value;
+            const toDate = document.getElementById("toDate").value;
+            
+            const today = new Date(); 
+            today.setHours(0, 0, 0, 0);
+            let current = new Date(fromDate);
+            
+            
+            const dayList = document.getElementById("dayList");
+
+            dayList.innerHTML = ""; 
+            
+            // Kiểm tra ngày
+            if (!fromDate || !toDate) {
+                alert("Vui lòng chọn đầy đủ ngày!");
+                return;
+            }
+
+            
+            if (current < today) {
+                alert("Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại!");
+                return;
+            }
+
+            
+            if (toDate < fromDate) {
+                alert("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+                return;
+            }
+
+            const end = new Date(toDate);
+            const days = [];
+            while (current <= end) {
+                const yyyy = current.getFullYear();
+                const mm = String(current.getMonth() + 1).padStart(2, "0");
+                const dd = String(current.getDate()).padStart(2, "0");
+                const dateStr = `${yyyy}-${mm}-${dd}`;
+                const VietNameseDate = `${dd}/${mm}/${yyyy}`;
+
+                const hasClasses = await checkClasses(dateStr);
+                if (hasClasses) {
+                    const div = document.createElement("div");
+                    div.textContent = VietNameseDate;
+                    div.style.padding = "10px";
+                    div.style.margin = "5px";
+                    div.style.border = "1px solid black";
+                    div.style.display = "inline-block";
+                    div.style.cursor = "pointer";
+                    div.classList.add("day-item");
+                    generateClasses(dateStr);
+                    div.onclick = () => {
+                        fetchClasses(dateStr);
+                    }
+                        
+                    dayList.appendChild(div);
+                }
+
+                
+                current.setDate(current.getDate() + 1);
+            }
+            
+
+            
+        }
+
+        function convertDateFormat(dateString) {
+            let [yyyy, mm, dd] = dateString.split('-');
+            return `${dd}/${mm}/${yyyy}`;
+        }
+
+        async function checkClasses(date) {
+            const weekday = getWeekday(date);
+            try {
+                const response = await fetch("http://localhost:8080/get-classes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date, weekday })
+                });
+                const data = await response.json();
+                return data.classes.length > 0;
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra lớp:", error);
+                return false;
+            }
+        }
+
+        function getWeekday(dateStr) {
+            const date = new Date(dateStr);
+            const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            return weekdays[date.getDay()];
+        }
+
+        async function generateClasses(date) {
+            const weekday = getWeekday(date);
+
+            try {
+                const response = await fetch("http://localhost:8080/get-classes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date, weekday })
+                });
+                const data = await response.json();
+
+                if (data.classes.length === 0) {
+                    classList.innerHTML = "";
+                    formContainer.innerHTML = "";
+                    return;
+                }
+
+                localStorage.setItem(`classes_${date}`, JSON.stringify(data.classes));
+                
+
+                
+            } catch (error) {
+                console.error("Lỗi khi gọi API:", error);
+            }
+        }
+
+        async function fetchClasses(date) {
+            const weekday = getWeekday(date);
+            const classList = document.getElementById("classList");
+            const formContainer = document.getElementById("formContainer");
+            const VietNameseDate = convertDateFormat(date);
+            classList.innerHTML = `<h3>Các lớp dạy vào ${VietNameseDate} (${weekday}):</h3>`;
+
+            try {
+                const mapSubject = await getAllSubjects();
+                const response = await fetch("http://localhost:8080/get-classes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date, weekday })
+                });
+                const data = await response.json();
+
+                if (data.classes.length === 0) {
+                    classList.innerHTML = "";
+                    formContainer.innerHTML = "";
+                    return;
+                }
+
+                data.classes.forEach((item, index) => {
+                    const btn = document.createElement("button");
+                    const subjectName = mapSubject[item.subject];
+                    btn.classList.add("class-button");
+                    btn.setAttribute("data-subject", item.subject);
+                    btn.setAttribute("data-className", item.className);
+                    btn.textContent = `${item.className} - ${subjectName}`;
+                    btn.style.margin = "5px";
+                    btn.onclick = () => openClassForm(date, item);
+                    classList.appendChild(btn);
+
+                    // Mở form cho lớp đầu tiên
+                    if (index === 0) {
+                        openClassForm(date, item);
+                    }
+                });
+
+                
+            } catch (error) {
+                console.error("Lỗi khi gọi API:", error);
+            }
+
+            
+        }
+
+        async function getAllSubjects() {
+            const response = await fetch("http://localhost:8080/get-subject");
+            const subjects = await response.json();
+
+            const mapSubject = {};
+            subjects.forEach(s => {
+                mapSubject[s.MH_Ma] = s.MH_Ten;
+            });
+
+            return mapSubject;  // Trả về object ánh xạ luôn
+        }
+
+
+
+
+        function getPeriodsString(start, count) {
+            let s = "";
+            for (let i = start; i < start + count; i++) {
+                s += i;
+            }
+            return s;
+        }
+
+        async function openClassForm(date, classInfo) { 
+            const formContainer = document.getElementById("formContainer");
+            const periodsStr = getPeriodsString(classInfo.tietBD, classInfo.soTiet);
+            const subjectName = mapSubject[classInfo.subject];
+            
+
+            const response = await fetch("http://localhost:8080/get-teachers");
+            const teachers = await response.json(); 
+
+            const savedTeacherCode = localStorage.getItem(`teacherCode_${date}_${classInfo.className}_${classInfo.subject}`);
+            const savedTeacherName = localStorage.getItem(`teacherName_${date}_${classInfo.className}_${classInfo.subject}`) || "";
+            
+            
+            var teacherOptions = `<option value="${maGV}">Không chọn nếu dạy bù</option>`;
+            teachers.forEach(teacher => {
+                if (teacher.GV_Ma === maGV) return;
+                if(teacher.GV_Ma === savedTeacherCode) {
+                    teacherOptions += `<option value="${teacher.GV_Ma}" data-bm="${teacher.TBM_Ma}" selected>${teacher.GV_Ma} - ${teacher.GV_HoTen}</option>`;
+                } else {
+                    teacherOptions += `<option value="${teacher.GV_Ma}" data-bm="${teacher.TBM_Ma}">${teacher.GV_Ma} - ${teacher.GV_HoTen}</option>`;
+                }
+                
+            });
+
+           
+            
+            const savedLesson = localStorage.getItem(`lesson_${date}_${classInfo.className}_${classInfo.subject}`) || "";
+            const savedChecked = localStorage.getItem(`check_${date}_${classInfo.className}_${classInfo.subject}`);
+            const isChecked = savedChecked !== null && savedChecked === "true";
+            const savedSubDate = localStorage.getItem(`substituteDate_${date}_${classInfo.className}_${classInfo.subject}`) || "";
+            const savedSubPeriod = localStorage.getItem(`substitutePeriod_${date}_${classInfo.className}_${classInfo.subject}`) || "";
+
+            
+
+            formContainer.innerHTML = `
+                
+                <fieldset class="leave-fieldset">
+                    <legend class="leave-form-title">Thông tin lớp ${classInfo.className} - ${subjectName}:</legend>
+                    
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Tiết dạy: </label>${periodsStr}
+                    </div>
+                    
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Tên bài: </label>
+                        <input type="text" id="lessonName" data-classname="${classInfo.className}" data-date="${date}"  data-subject="${classInfo.subject}" value="${savedLesson}" oninput="saveTempLesson(this)" class="leave-form-input">
+                    </div>
+                    
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Xin nghỉ </label>
+                        <input type="checkbox" id="isLeave" data-classname="${classInfo.className}" data-date="${date}"  data-subject="${classInfo.subject}" ${isChecked ? "checked" : ""} onchange="saveTempCheck(this)" class="leave-form-checkbox">
+                    </div>
+
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Giáo viên dạy thay: </label>
+                        <select id="subTeacher" data-classname="${classInfo.className}" data-date="${date}"  data-subject="${classInfo.subject}" onchange="saveTempTeacher(this)" class="leave-form-select">${teacherOptions}</select>
+                    </div>
+
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Ngày dạy thay: </label>
+                        <input type="date" id="substituteDate" data-classname="${classInfo.className}" data-date="${date}"  data-subject="${classInfo.subject}" value="${savedSubDate}" onchange="saveTempSubstituteDate(this)" class="leave-form-input">
+                    </div>
+
+                    <div class="leave-form-item">
+                        <label class="leave-form-label">Tiết bắt đầu dạy thay: </label>
+                        <input type="number" id="substitutePeriod" min="1" max="10" data-classname="${classInfo.className}" data-date="${date}"  data-subject="${classInfo.subject}" value="${savedSubPeriod}" onchange="saveTempSubstitutePeriod(this,${classInfo.soTiet})" class="leave-form-input">
+                    </div>
+                </fieldset>
+
+
+            `;
+
+            const subTeacherSelect = document.getElementById("subTeacher");
+            const substituteDateInput = document.getElementById("substituteDate");
+            const substitutePeriodInput = document.getElementById("substitutePeriod");
+
+            reformatDatePeriodInput(subTeacherSelect,substituteDateInput,substitutePeriodInput);
+            
+            subTeacherSelect.addEventListener("change", function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const selectedBM = selectedOption.getAttribute("data-bm"); 
+                const isSameBM = selectedBM === maBM; 
+                
+                if (this.value === maGV) {
+                    //  Trường hợp 1: Không chọn nếu dạy bù => Mở khoá
+                    substituteDateInput.disabled = false;
+                    substitutePeriodInput.disabled = false;
+                } else if (isSameBM) {
+                    //  Trường hợp 2: Giáo viên cùng tổ bộ môn => Khoá + Xoá giá trị
+                    substituteDateInput.disabled = true;
+                    substitutePeriodInput.disabled = true;
+                    substituteDateInput.value = "";
+                    substitutePeriodInput.value = "";
+                    localStorage.removeItem(`substituteDate_${substituteDateInput.getAttribute("data-date")}_${substituteDateInput.getAttribute("data-classname")}_${substituteDateInput.getAttribute("data-subject")}`);
+                    localStorage.removeItem(`substitutePeriod_${substitutePeriodInput.getAttribute("data-date")}_${substitutePeriodInput.getAttribute("data-classname")}_${substitutePeriodInput.getAttribute("data-subject")}`);
+                } else {
+                    //  Trường hợp 3: Giáo viên khác tổ bộ môn => Mở khoá
+                    substituteDateInput.disabled = false;
+                    substitutePeriodInput.disabled = false;
+                }
+            });    
+
+            document.getElementById("saveAll").style.display = "block";
+        }
+
+        function reformatDatePeriodInput(subTeacherSelect,substituteDateInput,substitutePeriodInput) {
+            let selectedOption = subTeacherSelect.options[subTeacherSelect.selectedIndex];
+            let selectedBM = selectedOption.getAttribute("data-bm"); 
+            
+            let isSameBM = selectedBM === maBM; 
+            
+            if (subTeacherSelect.value === maGV) {
+                //  Trường hợp 1: Không chọn nếu dạy bù => Mở khoá
+                substituteDateInput.disabled = false;
+                substitutePeriodInput.disabled = false;
+            } else if (isSameBM) {
+                //  Trường hợp 2: Giáo viên cùng tổ bộ môn => Khoá + Xoá giá trị
+                substituteDateInput.disabled = true;
+                substitutePeriodInput.disabled = true;
+                substituteDateInput.value = "";
+                substitutePeriodInput.value = "";
+                localStorage.removeItem(`substituteDate_${substituteDateInput.getAttribute("data-date")}_${substituteDateInput.getAttribute("data-classname")}_${substituteDateInput.getAttribute("data-subject")}`);
+                localStorage.removeItem(`substitutePeriod_${substitutePeriodInput.getAttribute("data-date")}_${substitutePeriodInput.getAttribute("data-classname")}_${substitutePeriodInput.getAttribute("data-subject")}`);
+            } else {
+                //  Trường hợp 3: Giáo viên khác tổ bộ môn => Mở khoá
+                substituteDateInput.disabled = false;
+                substitutePeriodInput.disabled = false;
+            }
+        }
+
+        function saveTempLesson(input) {
+            const className = input.getAttribute("data-classname");
+            const date = input.getAttribute("data-date");
+            const subject = input.getAttribute("data-subject");
+            
+            localStorage.setItem(`lesson_${date}_${className}_${subject}`, input.value);
+        }
+
+        function saveTempCheck(checkbox) {
+            const className = checkbox.getAttribute("data-classname");
+            const date = checkbox.getAttribute("data-date");
+            const subject = checkbox.getAttribute("data-subject");
+
+            localStorage.setItem(`check_${date}_${className}_${subject}`, checkbox.checked);
+        }
+
+        function saveTempTeacher(select){
+            const className = select.getAttribute("data-classname");
+            const date = select.getAttribute("data-date");
+            const subject = select.getAttribute("data-subject");
+
+            localStorage.setItem(`teacherCode_${date}_${className}_${subject}`, select.value);
+            let subTeacherName = select.options[select.selectedIndex].text;
+            if (subTeacherName === "Không chọn nếu dạy bù") {
+                subTeacherName = "Tự dạy bù";
+            }
+            localStorage.setItem(`teacherName_${date}_${className}_${subject}`, subTeacherName);
+            
+        }
+
+        function saveTempSubstituteDate(substituteDate) {
+            const className = substituteDate.getAttribute("data-classname");
+            const date = substituteDate.getAttribute("data-date");
+            const subject = substituteDate.getAttribute("data-subject");
+
+            localStorage.setItem(`substituteDate_${date}_${className}_${subject}`, substituteDate.value);
+        }
+
+        function saveTempSubstitutePeriod(substitutePeriod,soTiet) {
+            const className = substitutePeriod.getAttribute("data-classname");
+            const date = substitutePeriod.getAttribute("data-date");
+            const subject = substitutePeriod.getAttribute("data-subject");
+            const subPeriod = getPeriodsString(parseInt(substitutePeriod.value), soTiet);
+            
+            localStorage.setItem(`substitutePeriod_${date}_${className}_${subject}`, subPeriod);
+        }
+
+
+        function saveAllData() {
+            const reason = document.getElementById("reason").value.trim();
+            if (reason == "") {
+                alert("Lý do không được để trống!");
+                return;
+            }
+        }
+
+        function reset(){
+            document.getElementById("saveAll").style.display = "none";
+            classList.innerHTML = ``;
+            formContainer.innerHTML = ``;
+            localStorage.clear();
+        }
+
+        function getLeaveData() {
+            const leaveData = [];
+            console.log(localStorage);
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith("classes_")) {
+                    
+                    const date = key.split("_")[1];
+                    const data = JSON.parse(localStorage.getItem(key));
+                    data.forEach(item => {
+                        const subjectCode = item.subject;
+                        const className = item.className;
+                        
+                        const checkKey = `check_${date}_${className}_${subjectCode}`;
+                        const isChecked = localStorage.getItem(checkKey) === "true";
+
+                        if (isChecked) {
+                            const subjectName = mapSubject[subjectCode];
+                            const lessonName = localStorage.getItem(`lesson_${date}_${className}_${subjectCode}`) || "";
+                            const periodsStr = getPeriodsString(item.tietBD, item.soTiet);
+                            var subTeacherName = localStorage.getItem(`teacherName_${date}_${className}_${subjectCode}`) || "";
+                            if (subTeacherName === "" || subTeacherName === "Không chọn nếu dạy bù") {
+                                subTeacherName = "Tự dạy bù";
+                            }
+                            
+                            const subDate = localStorage.getItem(`substituteDate_${date}_${className}_${subjectCode}`) || "";
+                            const subPeriod = localStorage.getItem(`substitutePeriod_${date}_${className}_${subjectCode}`) || "";
+                            
+                            leaveData.push({
+                                date,
+                                className,
+                                subjectCode,
+                                subjectName,
+                                periodsStr,
+                                lessonName,
+                                subTeacherName,
+                                subDate,
+                                subPeriod
+                            });
+                        }
+                    });
+                }
+            }
+            leaveData.sort((a, b) => a.date.localeCompare(b.date));
+            return leaveData;
+        }
+
+        
+        document.getElementById("saveAll").addEventListener("click", () => {
+            const leaveData = getLeaveData();
+            const fromDate = document.getElementById("fromDate").value;
+            const toDate = document.getElementById("toDate").value;
+            const reason = document.getElementById("reason").value.trim();
+            
+
+            fetch("/result-leave-permission", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ leaveData, maGV, fromDate, toDate, reason })
+            })
+            .then(res => res.text())
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            });
+        });
+
+
+
+    </script>
+</body>
+</html>
