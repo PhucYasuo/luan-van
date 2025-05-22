@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin xin nghỉ</title>
+    <!-- <link rel="stylesheet" href="/css/style.css"> -->
+</head>
+<body>
+    <h1>Danh sách xin nghỉ</h1>
+    <% console.log(leaveData) %>
+    <% if (leaveData.length === 0) { %>
+        <p>Không có dữ liệu.</p>
+    <% } else { %>
+        <% leaveData.forEach(item => { %>
+            <% 
+                let divClass = "";
+                if (item.subTeacherName === "Tự dạy bù") {
+                    divClass = "self-sub";
+                } else if (item.subDate === "") {
+                    divClass = "same-sub";
+                } else {
+                    divClass = "dif-sub";
+                }
+                
+            %>
+            <div class="<%= divClass %> leave-result-item" style="border:1px solid #ccc; margin:10px; padding:10px;">
+                <strong>Ngày:</strong> <span class="date"><%= item.date %></span><br>   
+                <strong>Lớp:</strong> <span class="className"><%= item.className %></span><br>
+                <strong>Môn:</strong> <span class="subjectName" data-subject-code="<%=item.subjectCode %>"><%= item.subjectName %></span><br>
+                <strong>Tiết nghỉ:</strong> <span class="periodsStr"><%= item.periodsStr %></span><br>
+                <strong>Bài dạy:</strong> <span class="lessonName"><%= item.lessonName %></span><br>
+                <strong>GV thay:</strong> <span class="subTeacher"><%= item.subTeacherName %></span><br>
+                <strong>Ngày dạy bù:</strong> <span class="subDate"><%= item.subDate %></span><br>
+                <strong>Tiết dạy bù:</strong> <span class="subPeriod"><%= item.subPeriod %></span><br>
+                <button class="leave-result-btn" onclick="removeLeaveItem(this)">Xoá</button>
+            </div>
+        <% }) %>
+    <% } %>
+    <button class="leave-action-btn" onclick="createAllWordFiles()">Tạo file Word</button>
+    <button class="leave-action-btn" onclick="saveToDatabase()">Nộp</button>
+    <script>
+        function convertDateFormat(dateStr) {
+            if (!dateStr) return "";
+            const [year, month, day] = dateStr.split("-");
+            return `${day}/${month}/${year}`;
+        }
+
+        document.querySelectorAll(".date").forEach(el => {
+            const originalDate = el.textContent.trim();
+            el.textContent = convertDateFormat(originalDate);
+        });
+
+        document.querySelectorAll(".subDate").forEach(el => {
+            const originalDate = el.textContent.trim();
+            el.textContent = convertDateFormat(originalDate);
+        });
+
+        
+        function createAllWordFiles() {
+            const selfDivs = document.querySelectorAll('.self-sub');
+            const selfData = [];
+            const sameDivs = document.querySelectorAll('.same-sub');
+            const sameData = [];
+            const difDivs = document.querySelectorAll('.dif-sub');
+            const difData = [];
+            const fromDate = "<%= fromDate %>";
+            const toDate = "<%= toDate %>";
+            const reason = "<%= reason %>";
+
+            selfDivs.forEach((div) => {
+                selfData.push({
+                    date: div.querySelector('.date').innerText,
+                    className: div.querySelector('.className').innerText,
+                    subjectName: div.querySelector('.subjectName').innerText,
+                    periodsStr: div.querySelector('.periodsStr').innerText,
+                    lessonName: div.querySelector('.lessonName').innerText,
+                    subDate: div.querySelector('.subDate').innerText,
+                    subPeriod: div.querySelector('.subPeriod').innerText
+                });
+            });
+
+            sameDivs.forEach((div) => {
+                sameData.push({
+                    date: div.querySelector('.date').innerText,
+                    className: div.querySelector('.className').innerText,
+                    subjectName: div.querySelector('.subjectName').innerText,
+                    periodsStr: div.querySelector('.periodsStr').innerText,
+                    lessonName: div.querySelector('.lessonName').innerText,
+                    subTeacher: div.querySelector('.subTeacher').innerText
+                });
+            });
+
+            difDivs.forEach((div) => {
+                difData.push({
+                    date: div.querySelector('.date').innerText,
+                    className: div.querySelector('.className').innerText,
+                    subjectName: div.querySelector('.subjectName').innerText,
+                    periodsStr: div.querySelector('.periodsStr').innerText,
+                    lessonName: div.querySelector('.lessonName').innerText,
+                    subTeacher: div.querySelector('.subTeacher').innerText,
+                    subDate: div.querySelector('.subDate').innerText,
+                    subPeriod: div.querySelector('.subPeriod').innerText
+                });
+            });
+
+            fetch("/create-word-multiple", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    selfData: selfData,
+                    sameData: sameData,
+                    difData: difData,
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    reason: reason,
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = "don_xin_nghi.docx";
+                link.click();
+            })
+            .catch(error => console.error('Lỗi tạo file Word:', error));
+        }
+
+        function saveToDatabase() {
+            const fromDate = "<%= fromDate %>";
+            const toDate = "<%= toDate %>";
+            const reason = "<%= reason %>";
+            const allDivs = document.querySelectorAll('div');
+            const allData = [];
+
+            allDivs.forEach((div) => {
+                
+                allData.push({
+                    date: div.querySelector('.date').innerText,
+                    className: div.querySelector('.className').innerText,
+                    subjectCode : div.querySelector('.subjectName').getAttribute('data-subject-code'),
+                    periodsStr: div.querySelector('.periodsStr').innerText,
+                    lessonName: div.querySelector('.lessonName').innerText,
+                    subTeacherName: div.querySelector('.subTeacher').innerText,
+                    subTeacherCode: div.querySelector('.subTeacher').innerText.slice(0, 5),
+                    subDate: div.querySelector('.subDate').innerText,
+                    subPeriod: div.querySelector('.subPeriod').innerText
+                });
+            });
+
+            fetch("/save-leave-data", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fromDate: fromDate,
+                    toDate: toDate,
+                    reason: reason,
+                    allData: allData
+                })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success){
+                        alert("Đã lưu thông tin thành công!");
+                        window.location.href = "/";
+                    }
+                    else{
+                        alert("Lưu thông tin thất bại!");
+                    }
+                })
+                .catch(error => console.error('Lỗi lưu thông tin:', error));    
+            }
+
+
+        function removeLeaveItem(button) {
+            const div = button.parentElement;
+            div.remove();
+        }
+
+        
+
+    </script>
+</body>
+</html>

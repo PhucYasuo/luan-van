@@ -1,19 +1,18 @@
 <nav class="navbar">
     <ul>
-        <% if (user) { %>
+        
             <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
 
-            <% if (user.maCV === 'CV004') { %>
-                <li class="nav-item"><a class="nav-link" href="/approve-lp">Duyệt đơn</a></li>
-            <% } %>
-            <% if (user.maCV === 'CV001') { %>
+            <% if (user.permission === 'Q0003') { %>
                 <li class="nav-item"><a class="nav-link" href="/giaovien">Cập nhật giáo viên</a></li>
             <% } %>
+
+            <% if (user.permission === 'Q0004') { %>
+                <li class="nav-item"><a class="nav-link" href="/approve-lp">Duyệt đơn</a></li>
+            <% } %>
+
             <li class="nav-item"><a class="nav-link" href="/leave-permission">Xin nghỉ</a></li>
 
             <li class="nav-item"><a class="nav-link" href="/logout">Đăng xuất</a></li>
-        <% } else { %>
-            <li class="nav-item"><a class="nav-link" href="/sign-in">Đăng nhập</a></li>
-        <% } %>
     </ul>
 </nav>

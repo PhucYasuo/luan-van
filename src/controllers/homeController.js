@@ -10,21 +10,8 @@ const getHomepage = (req, res) => {
 };
 
 const getDashboard = async (req, res) => {
-	const sql = "SELECT GV_HoTen FROM giaovien WHERE GV_Ma = ?";
-	let tenGV = '';
-
 	try {
-		const [results] = await connection.promise().query(sql, [req.session.user.maGV]);
-		tenGV = results[0].GV_HoTen;
-		
-		
 		return res.render('dashboard.ejs', {
-			tenGV,
-			maGV: req.session.user.maGV,
-			maBM: req.session.user.maBM,
-			maCV: req.session.user.maCV,
-			hocKy: req.session.user.hocKy,
-			namHoc: req.session.user.namHoc,
 			user: req.session.user
 		});
 	} catch (err) {
@@ -45,6 +32,7 @@ const postSignIn = async (req, res) => {
 
         if (results.length > 0) {
 			req.session.user = {};
+			req.session.user.permission = results[0].Q_Ma;
 
 			const today = getToDay(); // yyyy-mm-dd
 			const [namHocResults] = await connection.promise().query('select * from namhoc where NH_NgayDauNam < ? order by NH_NgayDauNam desc limit 1', [today]);
@@ -61,21 +49,34 @@ const postSignIn = async (req, res) => {
 
 			req.session.user.maGV = results[0].GV_Ma;
 
-            const [results2] = await connection.promise().query('SELECT gcv.CV_Ma FROM giaovien gv, giuchucvu gcv WHERE gcv.GV_Ma = gv.GV_Ma AND gv.GV_Ma = ? AND gcv.HK_HocKy = ? AND gcv.NH_NamHoc = ?', [req.session.user.maGV, req.session.user.hocKy, req.session.user.namHoc]);
-            
-            if (results2.length > 0) {
-				req.session.user.maCV = results2[0].CV_Ma;
+            const [giuCVresults] = await connection.promise().query('SELECT gcv.CV_Ma FROM giaovien gv, giuchucvu gcv WHERE gcv.GV_Ma = gv.GV_Ma AND gv.GV_Ma = ? AND gcv.HK_HocKy = ? AND gcv.NH_NamHoc = ?', [req.session.user.maGV, req.session.user.hocKy, req.session.user.namHoc]);
+            if (giuCVresults.length > 0) {
+				req.session.user.maCV = giuCVresults[0].CV_Ma;
             } else {
                 req.session.user.maCV = "";
             }
 			
-			const [results3] = await connection.promise().query('SELECT TBM_Ma FROM giaovien WHERE GV_Ma = ?', [req.session.user.maGV]);
-			if (results3.length > 0) {
-				req.session.user.maBM = results3[0].TBM_Ma;
+			const [giaoVienResults] = await connection.promise().query('SELECT GV_HoTen, TBM_Ma FROM giaovien WHERE GV_Ma = ?', [req.session.user.maGV]);
+			if (giaoVienResults.length > 0) {
+				req.session.user.maBM = giaoVienResults[0].TBM_Ma;
+				req.session.user.tenGV = giaoVienResults[0].GV_HoTen;
             } else {
-				return res.send('Lỗi không xác định. Không tìm thấy mã bộ môn của giáo viên này!');
+				return res.send('Lỗi không xác định. Không tìm thấy mã bộ môn hoặc tên của giáo viên này!');
 			}
+
 			
+			
+			if (req.session.user.maCV === "") {
+				req.session.user.tenCV = "Giáo viên";
+			}
+			else {
+				const [chucVuResults] = await connection.promise().query('SELECT CV_Ten FROM chucvu WHERE CV_Ma = ?', [req.session.user.maCV]);
+				if (chucVuResults.length > 0) {
+					req.session.user.tenCV = chucVuResults[0].CV_Ten;
+				} else {
+					return res.send('Lỗi không xác định. Không tìm thấy tên chức vụ này!');
+				}
+			}
 
             
             res.redirect(`/dashboard`); 
@@ -86,6 +87,17 @@ const postSignIn = async (req, res) => {
         console.error(err);
         res.send('Lỗi trong quá trình xử lý yêu cầu.');
     }
+};
+
+const getLogout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Lỗi khi hủy session:', err);
+            return res.send('Đã xảy ra lỗi khi đăng xuất.');
+        }
+
+        res.redirect('/');
+    });
 };
 
 function getToDay() {
@@ -102,12 +114,13 @@ function countDaysBetween(date1, date2) {
 	const d2 = new Date(date2);
 	const diffInMs = Math.abs(d2 - d1);
 	return Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-  }
+}
 
   // đẩy qua web.js
 module.exports = {
     getHomepage,
 	getDashboard,
 	getSignIn,
-	postSignIn
+	postSignIn,
+	getLogout
 };

@@ -30,8 +30,8 @@
         <button id="saveAll" class="leave-btn" onclick="saveAllData()">Lưu tất cả</button>
     </div>
     <script>
-        const maGV = "<%= maGV %>";
-        const maBM = "<%= maBM %>";
+        const maGV = "<%= user.maGV %>";
+        const maBM = "<%= user.maBM %>";
         async function fetchDays() {
             reset();
             
@@ -108,7 +108,7 @@
         async function checkClasses(date) {
             const weekday = getWeekday(date);
             try {
-                const response = await fetch("http://localhost:8080/get-classes", {
+                const response = await fetch("/get-classes", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ date, weekday })
@@ -131,7 +131,7 @@
             const weekday = getWeekday(date);
 
             try {
-                const response = await fetch("http://localhost:8080/get-classes", {
+                const response = await fetch("/get-classes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ date, weekday })
@@ -162,7 +162,7 @@
 
             try {
                 const mapSubject = await getAllSubjects();
-                const response = await fetch("http://localhost:8080/get-classes", {
+                const response = await fetch("/get-classes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ date, weekday })
@@ -201,14 +201,14 @@
         }
 
         async function getAllSubjects() {
-            const response = await fetch("http://localhost:8080/get-subject");
+            const response = await fetch("/get-subject");
             const subjects = await response.json();
-
+            
             const mapSubject = {};
             subjects.forEach(s => {
-                mapSubject[s.MH_Ma] = s.MH_Ten;
+                mapSubject[s.M_Ma] = s.M_Ten;
             });
-
+            
             return mapSubject;  // Trả về object ánh xạ luôn
         }
 
@@ -224,12 +224,14 @@
         }
 
         async function openClassForm(date, classInfo) { 
+            const mapSubject = await getAllSubjects();
             const formContainer = document.getElementById("formContainer");
             const periodsStr = getPeriodsString(classInfo.tietBD, classInfo.soTiet);
             const subjectName = mapSubject[classInfo.subject];
             
+            
 
-            const response = await fetch("http://localhost:8080/get-teachers");
+            const response = await fetch("/get-teachers");
             const teachers = await response.json(); 
 
             const savedTeacherCode = localStorage.getItem(`teacherCode_${date}_${classInfo.className}_${classInfo.subject}`);
@@ -302,56 +304,31 @@
             reformatDatePeriodInput(subTeacherSelect,substituteDateInput,substitutePeriodInput);
             
             subTeacherSelect.addEventListener("change", function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const selectedBM = selectedOption.getAttribute("data-bm"); 
-                const isSameBM = selectedBM === maBM; 
-                
-                if (this.value === maGV) {
-                    //  Trường hợp 1: Không chọn nếu dạy bù => Mở khoá
-                    substituteDateInput.disabled = false;
-                    substitutePeriodInput.disabled = false;
-                } else if (isSameBM) {
-                    //  Trường hợp 2: Giáo viên cùng tổ bộ môn => Khoá + Xoá giá trị
-                    substituteDateInput.disabled = true;
-                    substitutePeriodInput.disabled = true;
-                    substituteDateInput.value = "";
-                    substitutePeriodInput.value = "";
-                    localStorage.removeItem(`substituteDate_${substituteDateInput.getAttribute("data-date")}_${substituteDateInput.getAttribute("data-classname")}_${substituteDateInput.getAttribute("data-subject")}`);
-                    localStorage.removeItem(`substitutePeriod_${substitutePeriodInput.getAttribute("data-date")}_${substitutePeriodInput.getAttribute("data-classname")}_${substitutePeriodInput.getAttribute("data-subject")}`);
-                } else {
-                    //  Trường hợp 3: Giáo viên khác tổ bộ môn => Mở khoá
-                    substituteDateInput.disabled = false;
-                    substitutePeriodInput.disabled = false;
-                }
-            });    
+                reformatDatePeriodInput(subTeacherSelect, substituteDateInput, substitutePeriodInput);
+            });
+    
 
             document.getElementById("saveAll").style.display = "block";
         }
 
-        function reformatDatePeriodInput(subTeacherSelect,substituteDateInput,substitutePeriodInput) {
-            let selectedOption = subTeacherSelect.options[subTeacherSelect.selectedIndex];
-            let selectedBM = selectedOption.getAttribute("data-bm"); 
-            
-            let isSameBM = selectedBM === maBM; 
-            
-            if (subTeacherSelect.value === maGV) {
-                //  Trường hợp 1: Không chọn nếu dạy bù => Mở khoá
-                substituteDateInput.disabled = false;
-                substitutePeriodInput.disabled = false;
-            } else if (isSameBM) {
-                //  Trường hợp 2: Giáo viên cùng tổ bộ môn => Khoá + Xoá giá trị
-                substituteDateInput.disabled = true;
-                substitutePeriodInput.disabled = true;
-                substituteDateInput.value = "";
-                substitutePeriodInput.value = "";
-                localStorage.removeItem(`substituteDate_${substituteDateInput.getAttribute("data-date")}_${substituteDateInput.getAttribute("data-classname")}_${substituteDateInput.getAttribute("data-subject")}`);
-                localStorage.removeItem(`substitutePeriod_${substitutePeriodInput.getAttribute("data-date")}_${substitutePeriodInput.getAttribute("data-classname")}_${substitutePeriodInput.getAttribute("data-subject")}`);
-            } else {
-                //  Trường hợp 3: Giáo viên khác tổ bộ môn => Mở khoá
-                substituteDateInput.disabled = false;
-                substitutePeriodInput.disabled = false;
+        function reformatDatePeriodInput(select, dateInput, periodInput) {
+            const selectedOption = select.options[select.selectedIndex];
+            const selectedBM = selectedOption.getAttribute("data-bm");
+            const isSameBM = selectedBM === maBM;
+            // TH1 và TH3
+            const shouldEnable = select.value === maGV || !isSameBM;
+
+            dateInput.disabled = !shouldEnable;
+            periodInput.disabled = !shouldEnable;
+            //TH2
+            if (!shouldEnable) {
+                dateInput.value = "";
+                periodInput.value = "";
+                localStorage.removeItem(`substituteDate_${dateInput.getAttribute("data-date")}_${dateInput.getAttribute("data-classname")}_${dateInput.getAttribute("data-subject")}`);
+                localStorage.removeItem(`substitutePeriod_${periodInput.getAttribute("data-date")}_${periodInput.getAttribute("data-classname")}_${periodInput.getAttribute("data-subject")}`);
             }
         }
+
 
         function saveTempLesson(input) {
             const className = input.getAttribute("data-classname");
@@ -416,9 +393,10 @@
             localStorage.clear();
         }
 
-        function getLeaveData() {
+        async function getLeaveData() {
+            const mapSubject = await getAllSubjects();
             const leaveData = [];
-            console.log(localStorage);
+            
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith("classes_")) {
@@ -464,26 +442,51 @@
         }
 
         
-        document.getElementById("saveAll").addEventListener("click", () => {
-            const leaveData = getLeaveData();
-            const fromDate = document.getElementById("fromDate").value;
-            const toDate = document.getElementById("toDate").value;
+        document.getElementById("saveAll").addEventListener("click", async () => {
             const reason = document.getElementById("reason").value.trim();
-            
 
-            fetch("/result-leave-permission", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ leaveData, maGV, fromDate, toDate, reason })
-            })
-            .then(res => res.text())
-            .then(html => {
-                document.open();
-                document.write(html);
-                document.close();
-            });
+            // Kiểm tra nếu lý do bị bỏ trống
+            if (!reason) {
+                alert("Vui lòng nhập lý do xin nghỉ!");
+                document.getElementById("reason").focus();
+                return;
+            }
+
+            try {
+                const leaveData = await getLeaveData();
+                console.log(leaveData);
+                const fromDate = document.getElementById("fromDate").value;
+                const toDate = document.getElementById("toDate").value;
+
+                // Tạo form ẩn
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/result-leave-permission";
+                form.style.display = "none"; // Ẩn form
+
+                // Thêm dữ liệu vào form
+                const fields = [
+                    { name: "leaveData", value: JSON.stringify(leaveData) },
+                    { name: "fromDate", value: fromDate },
+                    { name: "toDate", value: toDate },
+                    { name: "reason", value: reason }
+                ];
+
+                fields.forEach(field => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                // Thêm form vào DOM và submit
+                document.body.appendChild(form);
+                form.submit();
+            } catch (error) {
+                console.error("Lỗi khi chuẩn bị dữ liệu xin nghỉ:", error);
+                alert("Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại!");
+            }
         });
 
 
