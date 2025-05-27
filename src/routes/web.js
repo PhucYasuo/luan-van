@@ -17,6 +17,25 @@ const {
     saveLeaveData
 } = require('../controllers/leaveController');
 
+const {
+    getApproveLP,
+    getApproveLPDetail,
+    updateStatus
+} = require('../controllers/approveController');
+
+const {
+    getStatisticByDepartmentLp,
+    postCreateStatisticByDepartmentLp
+} = require('../controllers/statisticController');
+
+const {
+    index,
+    getOne,
+    create,
+    update,
+    remove
+} = require('../controllers/giaoVienController');
+
 const router = express.Router();
 
 // homeController
@@ -35,5 +54,20 @@ router.post('/result-leave-permission', postResultLP);
 router.post('/create-word-multiple', createWordMultiple);
 router.post('/save-leave-data', saveLeaveData);
 
+// approveController
+router.get('/approve-lp', getApproveLP);
+router.get('/approve-lp-detail/:PNP_STT', getApproveLPDetail);
+router.post('/approve-lp-update', updateStatus);
+
+// statisticController
+router.get('/statistical-department-lp', getStatisticByDepartmentLp);
+router.post('/create-statistic-department-lp', postCreateStatisticByDepartmentLp);
+
+// giaoVienController
+router.get('/giao-vien', index);
+router.get('/giao-vien/:GV_Ma', getOne);
+router.post('/giao-vien', create);
+router.put('/giao-vien/edit/:GV_Ma', update);
+router.delete('/giao-vien/:GV_Ma', remove);
 
 module.exports = router; 

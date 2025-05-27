@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="/css/style.css"> -->
+</head>
+<body>
+    <%- include('navbar') %>
+    <h1 class="statistical-title">Thống Kê Nhật Ký Giảng Dạy Theo Tổ Bộ Môn</h1>
+
+    <table class="statistical-table">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Mã Giáo Viên</th>
+                <th>Họ Tên Giáo Viên</th>
+                <th>Số Tiết Nghỉ</th>
+                <th>Số Tiết Dạy Bù</th>
+                <th>Số Tiết Dạy Thay</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% thongke.forEach(item => { %>
+                <tr>
+                    <td><%= item.STT %></td>
+                    <td><%= item.GV_Ma %></td>
+                    <td><%= item.GV_HoTen %></td>
+                    <td><%= item.tietNghi %></td>
+                    <td><%= item.tietDayBu %></td>
+                    <td><%= item.tietDayThay %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <button class="export-btn" onclick="exportWord()">In Thống Kê</button>
+
+    <script>
+        async function exportWord() {
+            try {
+                const response = await fetch("/create-statistic-department-lp", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        thongke: <%- JSON.stringify(thongke) %>
+                    })
+                });
+
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "thong_ke_to_bo_mon.docx";
+                link.click();
+            } catch (error) {
+                console.error('Error creating Word file:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>

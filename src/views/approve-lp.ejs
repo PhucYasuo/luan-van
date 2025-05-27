@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt Đơn Xin Phép</title>
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+</head>
+<body>
+    <%- include('navbar') %>
+
+    <h1 class="approve-title">Duyệt Đơn Xin Phép</h1>
+    <table class="approve-table">
+        <thead>
+            <tr>
+                <th>PNP_STT</th>
+                <th>GV_Ma</th>
+                <th>GV_Ten</th>
+                <th>Từ Ngày</th>
+                <th>Đến Ngày</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% data.forEach(function(item) { %>
+                <tr>
+                    <td><%= item.PNP_STT %></td>
+                    <td><%= item.GV_Ma %></td>
+                    <td><%= item.GV_HoTen %></td>
+                    <td class="date"><%= item.PNP_TuNgay %></td>
+                    <td class="date"><%= item.PNP_DenNgay %></td>
+                    <td>
+                        <a href="/approve-lp-detail/<%= item.PNP_STT %>" class="view-detail">Xem Chi Tiết</a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <script>
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        document.querySelectorAll('.date').forEach(element => {
+            const originalDate = element.textContent.trim();
+            element.textContent = formatDate(originalDate);
+        });
+    </script>
+</body>
+</html>

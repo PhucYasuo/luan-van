@@ -1,4 +1,3 @@
-const express = require('express');
 const connection = require('../config/database');
 
 const getLeave = (req, res) => {

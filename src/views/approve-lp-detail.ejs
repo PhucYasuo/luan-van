@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duyệt Đơn Xin Phép</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1 class="approve-detail-title">Chi Tiết Đơn Xin Phép</h1>
+    <div class="approve-detail">
+        <h3>Tên Giáo Viên: <%= detail.GV_HoTen %></h3>
+        <p>Lý Do: <%= detail.PNP_LyDo %></p>
+        <p>Từ Ngày: <span class="date"><%= detail.PNP_TuNgay %></span></p>
+        <p>Đến Ngày: <span class="date"><%= detail.PNP_DenNgay %></span></p>
+    </div>
+
+    <h2 class="approve-detail-subtitle">Chi Tiết Nghỉ Phép</h2>
+    <table class="approve-detail-table">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Ngày Nghỉ</th>
+                <th>Lớp</th>
+                <th>Môn</th>
+                <th>Tiết Nghỉ</th>
+                <th>Tên Bài</th>
+                <th>Giáo Viên Dạy Thay</th>
+                <th>Ngày Bù</th>
+                <th>Tiết Bù</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% count = 0; %>
+            <% chitiet.forEach(function(item) { %>
+            <% count++; %>
+                <tr>
+                    <td><%= count %></td>
+                    <td class="date"><%= item.CTNP_NgayNghi %></td>
+                    <td><%= item.L_STTLop %></td>
+                    <td><%= item.M_Ma %></td>
+                    <td><%= item.CTNP_TietBDNghi %></td>
+                    <td><%= item.CTNP_TenBai %></td>
+                    <td><%= item.GV_Ma %></td>
+                    <td class="date"><%= item.CTNP_NgayDayBu %></td>
+                    <td><%= item.CTNP_TietBDDayBu %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+    <div class="approve-action">
+        <form id="approveForm" action="/approve-lp-update" method="POST">
+            <input type="hidden" name="PNP_STT" value="<%= detail.PNP_STT %>">
+            <input type="hidden" name="action" id="actionValue">
+            <button type="button" class="approve-btn" onclick="submitForm('approve')">Duyệt</button>
+            <button type="button" class="reject-btn" onclick="submitForm('reject')">Từ Chối</button>
+        </form>
+    </div>
+    <script>
+        // Chức năng định dạng ngày tháng (cũng không thay đổi)
+        function formatsDate(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        document.querySelectorAll('.date').forEach(element => {
+            const originalDate = element.textContent.trim();
+            element.textContent = formatDate(originalDate);
+        });
+        
+        function submitForm(value) {
+            document.getElementById('actionValue').value = value;
+            document.getElementById('approveForm').submit();
+        }
+    </script>
+
+</body>
+</html>
+

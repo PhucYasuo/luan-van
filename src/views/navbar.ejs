@@ -4,11 +4,12 @@
             <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
 
             <% if (user.permission === 'Q0003') { %>
-                <li class="nav-item"><a class="nav-link" href="/giaovien">Cập nhật giáo viên</a></li>
+                <li class="nav-item"><a class="nav-link" href="/giao-vien">Cập nhật giáo viên</a></li>
             <% } %>
 
             <% if (user.permission === 'Q0004') { %>
                 <li class="nav-item"><a class="nav-link" href="/approve-lp">Duyệt đơn</a></li>
+                <li class="nav-item"><a class="nav-link" href="/statistical-department-lp">Thống kê nhật ký giảng dạy của tổ</a></li>
             <% } %>
 
             <li class="nav-item"><a class="nav-link" href="/leave-permission">Xin nghỉ</a></li>

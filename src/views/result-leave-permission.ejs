@@ -36,7 +36,7 @@
             </div>
         <% }) %>
     <% } %>
-    <button class="leave-action-btn" onclick="createAllWordFiles()">Tạo file Word</button>
+    <button class="leave-action-btn" onclick="createWordDocument()">Tạo file Word</button>
     <button class="leave-action-btn" onclick="saveToDatabase()">Nộp</button>
     <script>
         function convertDateFormat(dateStr) {
@@ -56,121 +56,93 @@
         });
 
         
-        function createAllWordFiles() {
-            const selfDivs = document.querySelectorAll('.self-sub');
-            const selfData = [];
-            const sameDivs = document.querySelectorAll('.same-sub');
-            const sameData = [];
-            const difDivs = document.querySelectorAll('.dif-sub');
-            const difData = [];
-            const fromDate = "<%= fromDate %>";
-            const toDate = "<%= toDate %>";
-            const reason = "<%= reason %>";
+        async function createWordDocument() {
+            try {
+                const [selfData, sameData, difData] = await Promise.all([
+                    Array.from(document.querySelectorAll('.self-sub')).map(div => ({
+                        date: div.querySelector('.date')?.innerText,
+                        className: div.querySelector('.className')?.innerText,
+                        subjectName: div.querySelector('.subjectName')?.innerText,
+                        periodsStr: div.querySelector('.periodsStr')?.innerText,
+                        lessonName: div.querySelector('.lessonName')?.innerText,
+                        subDate: div.querySelector('.subDate')?.innerText,
+                        subPeriod: div.querySelector('.subPeriod')?.innerText
+                    })),
+                    Array.from(document.querySelectorAll('.same-sub')).map(div => ({
+                        date: div.querySelector('.date')?.innerText,
+                        className: div.querySelector('.className')?.innerText,
+                        subjectName: div.querySelector('.subjectName')?.innerText,
+                        periodsStr: div.querySelector('.periodsStr')?.innerText,
+                        lessonName: div.querySelector('.lessonName')?.innerText,
+                        subTeacher: div.querySelector('.subTeacher')?.innerText
+                    })),
+                    Array.from(document.querySelectorAll('.dif-sub')).map(div => ({
+                        date: div.querySelector('.date')?.innerText,
+                        className: div.querySelector('.className')?.innerText,
+                        subjectName: div.querySelector('.subjectName')?.innerText,
+                        periodsStr: div.querySelector('.periodsStr')?.innerText,
+                        lessonName: div.querySelector('.lessonName')?.innerText,
+                        subTeacher: div.querySelector('.subTeacher')?.innerText,
+                        subDate: div.querySelector('.subDate')?.innerText,
+                        subPeriod: div.querySelector('.subPeriod')?.innerText
+                    }))
+                ]);
 
-            selfDivs.forEach((div) => {
-                selfData.push({
-                    date: div.querySelector('.date').innerText,
-                    className: div.querySelector('.className').innerText,
-                    subjectName: div.querySelector('.subjectName').innerText,
-                    periodsStr: div.querySelector('.periodsStr').innerText,
-                    lessonName: div.querySelector('.lessonName').innerText,
-                    subDate: div.querySelector('.subDate').innerText,
-                    subPeriod: div.querySelector('.subPeriod').innerText
+                const response = await fetch("/create-word-multiple", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        selfData,
+                        sameData,
+                        difData,
+                        fromDate: "<%= fromDate %>",
+                        toDate: "<%= toDate %>",
+                        reason: "<%= reason %>"
+                    })
                 });
-            });
 
-            sameDivs.forEach((div) => {
-                sameData.push({
-                    date: div.querySelector('.date').innerText,
-                    className: div.querySelector('.className').innerText,
-                    subjectName: div.querySelector('.subjectName').innerText,
-                    periodsStr: div.querySelector('.periodsStr').innerText,
-                    lessonName: div.querySelector('.lessonName').innerText,
-                    subTeacher: div.querySelector('.subTeacher').innerText
-                });
-            });
-
-            difDivs.forEach((div) => {
-                difData.push({
-                    date: div.querySelector('.date').innerText,
-                    className: div.querySelector('.className').innerText,
-                    subjectName: div.querySelector('.subjectName').innerText,
-                    periodsStr: div.querySelector('.periodsStr').innerText,
-                    lessonName: div.querySelector('.lessonName').innerText,
-                    subTeacher: div.querySelector('.subTeacher').innerText,
-                    subDate: div.querySelector('.subDate').innerText,
-                    subPeriod: div.querySelector('.subPeriod').innerText
-                });
-            });
-
-            fetch("/create-word-multiple", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    selfData: selfData,
-                    sameData: sameData,
-                    difData: difData,
-                    fromDate: fromDate,
-                    toDate: toDate,
-                    reason: reason,
-                })
-            })
-            .then(response => response.blob())
-            .then(blob => {
+                const blob = await response.blob();
                 const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
+                link.href = URL.createObjectURL(blob);
                 link.download = "don_xin_nghi.docx";
                 link.click();
-            })
-            .catch(error => console.error('Lỗi tạo file Word:', error));
+            } catch (error) {
+                console.error('Error creating Word file:', error);
+            }
         }
 
-        function saveToDatabase() {
-            const fromDate = "<%= fromDate %>";
-            const toDate = "<%= toDate %>";
-            const reason = "<%= reason %>";
-            const allDivs = document.querySelectorAll('div');
-            const allData = [];
+        async function saveToDatabase() {
+            try {
+                const allData = Array.from(document.querySelectorAll('div')).map(div => ({
+                    date: div.querySelector('.date')?.innerText,
+                    className: div.querySelector('.className')?.innerText,
+                    subjectCode: div.querySelector('.subjectName')?.getAttribute('data-subject-code'),
+                    periodsStr: div.querySelector('.periodsStr')?.innerText,
+                    lessonName: div.querySelector('.lessonName')?.innerText,
+                    subTeacherName: div.querySelector('.subTeacher')?.innerText,
+                    subTeacherCode: div.querySelector('.subTeacher')?.innerText.slice(0, 5),
+                    subDate: div.querySelector('.subDate')?.innerText,
+                    subPeriod: div.querySelector('.subPeriod')?.innerText
+                }));
 
-            allDivs.forEach((div) => {
-                
-                allData.push({
-                    date: div.querySelector('.date').innerText,
-                    className: div.querySelector('.className').innerText,
-                    subjectCode : div.querySelector('.subjectName').getAttribute('data-subject-code'),
-                    periodsStr: div.querySelector('.periodsStr').innerText,
-                    lessonName: div.querySelector('.lessonName').innerText,
-                    subTeacherName: div.querySelector('.subTeacher').innerText,
-                    subTeacherCode: div.querySelector('.subTeacher').innerText.slice(0, 5),
-                    subDate: div.querySelector('.subDate').innerText,
-                    subPeriod: div.querySelector('.subPeriod').innerText
+                const response = await fetch("/save-leave-data", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fromDate: "<%= fromDate %>",
+                        toDate: "<%= toDate %>",
+                        reason: "<%= reason %>",
+                        allData
+                    })
                 });
-            });
 
-            fetch("/save-leave-data", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fromDate: fromDate,
-                    toDate: toDate,
-                    reason: reason,
-                    allData: allData
-                })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if(data.success){
-                        alert("Đã lưu thông tin thành công!");
-                        window.location.href = "/";
-                    }
-                    else{
-                        alert("Lưu thông tin thất bại!");
-                    }
-                })
-                .catch(error => console.error('Lỗi lưu thông tin:', error));    
+                const data = await response.json();
+                alert(data.success ? "Đã lưu thông tin thành công!" : "Lưu thông tin thất bại!");
+                if (data.success) window.location.href = "/";
+            } catch (error) {
+                console.error('Error saving data:', error);
             }
+        }
 
 
         function removeLeaveItem(button) {

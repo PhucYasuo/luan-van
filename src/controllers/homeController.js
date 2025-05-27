@@ -1,4 +1,3 @@
-const express = require('express');
 const connection = require('../config/database');
 
 const getHomepage = (req, res) => {
@@ -64,7 +63,12 @@ const postSignIn = async (req, res) => {
 				return res.send('Lỗi không xác định. Không tìm thấy mã bộ môn hoặc tên của giáo viên này!');
 			}
 
-			
+			const [boMonResults] = await connection.promise().query('SELECT TBM_Ten FROM tobomon WHERE TBM_Ma = ?', [req.session.user.maBM]);
+			if (boMonResults.length > 0) {
+				req.session.user.tenBM = boMonResults[0].TBM_Ten;
+			} else {
+				return res.send('Lỗi không xác định. Không tìm thấy tên bộ môn này!');
+			}
 			
 			if (req.session.user.maCV === "") {
 				req.session.user.tenCV = "Giáo viên";
