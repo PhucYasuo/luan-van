@@ -332,48 +332,48 @@ const saveLeaveData = async (req, res) => {
     const maGV = req.session.user.maGV;
     const hocKy = req.session.user.hocKy;
     const namHoc = req.session.user.namHoc;
-  try {
-    // Tạo mã phiếu nghỉ phép
-    const [maxPNP] = await connection.promise().query(`SELECT MAX(PNP_STT) AS max FROM phieunghiphep`);
-    let newPNP = 'PNP000001';
-    if (maxPNP[0].max) {
-        const num = parseInt(maxPNP[0].max.slice(3)) + 1;
-        newPNP = 'PNP' + num.toString().padStart(6, '0'); 
-    }
+    try {
+        // Tạo mã phiếu nghỉ phép
+        const [maxPNP] = await connection.promise().query(`SELECT MAX(PNP_STT) AS max FROM phieunghiphep`);
+        let newPNP = 'PNP000001';
+        if (maxPNP[0].max) {
+            const num = parseInt(maxPNP[0].max.slice(3)) + 1;
+            newPNP = 'PNP' + num.toString().padStart(6, '0'); 
+        }
 
-    // Thêm vào phieunghiphep
-    await connection.promise().query(`
-        INSERT INTO phieunghiphep 
-        (PNP_STT, PNP_TuNgay, PNP_DenNgay, PNP_LyDo, GV_Ma, HK_HocKy, NH_NamHoc, TT_Ma)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [newPNP, fromDate, toDate, reason, maGV, hocKy, namHoc, 'TT001']
-    );
-
-    
-    for (let item of allData) {
-        let khoi = item.className.slice(0, 2);
-        let kyHieu = item.className.slice(2, 3);
-        let sttLop = item.className.slice(3);
-        item.date = convertDateFormatToData(item.date);
-        item.subDate = convertDateFormatToData(item.subDate);
+        // Thêm vào phieunghiphep
         await connection.promise().query(`
-            INSERT INTO chitietnghiphep
-            (PNP_STT, CTNP_NgayNghi, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, M_Ma, 
-            CTNP_TietBDNghi, CTNP_SoTietNghi, CTNP_TenBai, GV_Ma, CTNP_NgayDayBu, CTNP_TietBDDayBu)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [newPNP, item.date, sttLop, khoi, kyHieu, namHoc, item.subjectCode, 
-            item.periodsStr.charAt(0), item.periodsStr.length, item.lessonName,
-            (item.subTeacherName === 'Tự dạy bù' ? null : item.subTeacherCode),
-            item.subDate || null, item.subPeriod || null]
+            INSERT INTO phieunghiphep 
+            (PNP_STT, PNP_TuNgay, PNP_DenNgay, PNP_LyDo, GV_Ma, HK_HocKy, NH_NamHoc, TT_Ma)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [newPNP, fromDate, toDate, reason, maGV, hocKy, namHoc, 'TT001']
         );
+
+        
+        for (let item of allData) {
+            let khoi = item.className.slice(0, 2);
+            let kyHieu = item.className.slice(2, 3);
+            let sttLop = item.className.slice(3);
+            item.date = convertDateFormatToData(item.date);
+            item.subDate = convertDateFormatToData(item.subDate);
+            await connection.promise().query(`
+                INSERT INTO chitietnghiphep
+                (PNP_STT, CTNP_NgayNghi, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, M_Ma, 
+                CTNP_TietBDNghi, CTNP_SoTietNghi, CTNP_TenBai, GV_Ma, CTNP_NgayDayBu, CTNP_TietBDDayBu)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [newPNP, item.date, sttLop, khoi, kyHieu, namHoc, item.subjectCode, 
+                item.periodsStr.charAt(0), item.periodsStr.length, item.lessonName,
+                (item.subTeacherName === 'Tự dạy bù' ? null : item.subTeacherCode),
+                item.subDate || null, item.subPeriod || null]
+            );
+        }
+        
+        res.json({ success: true, message: 'Đã lưu thành công!' });
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Có lỗi xảy ra khi lưu dữ liệu.' });
     }
-    
-    res.json({ success: true, message: 'Đã lưu thành công!' });
-    
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Có lỗi xảy ra khi lưu dữ liệu.' });
-  }
 }
 
 module.exports = {
