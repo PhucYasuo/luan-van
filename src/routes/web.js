@@ -67,7 +67,7 @@ router.post('/create-statistic-department-lp', postCreateStatisticByDepartmentLp
 router.get('/giao-vien', index);
 router.get('/giao-vien/:GV_Ma', getOne);
 router.post('/giao-vien', create);
-router.put('/giao-vien/edit/:GV_Ma', update);
+router.put('/giao-vien/:GV_Ma', update);
 router.delete('/giao-vien/:GV_Ma', remove);
 
 module.exports = router; 
