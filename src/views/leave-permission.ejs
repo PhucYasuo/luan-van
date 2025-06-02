@@ -132,9 +132,9 @@
 
             try {
                 const response = await fetch("/get-classes", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ date, weekday })
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date, weekday })
                 });
                 const data = await response.json();
 

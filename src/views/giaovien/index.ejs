@@ -64,7 +64,7 @@
 		transition: background-color 0.3s, transform 0.1s;
 		}
 		button:hover, a:hover {
-		background-color: #0056b3;
+		background-color: #edf0f4;
 		transform: translateY(-1px);
 		}
 		a[href*="/delete"] {
@@ -109,7 +109,7 @@
 		padding: 20px;
 		border-radius: 8px;
 		width: 100%;
-		max-width: 500px;
+		max-width: 600px;
 		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 		transform: translateY(-50px);
 		transition: transform 0.3s ease;
@@ -131,8 +131,8 @@
 		.modal-content input,
 		.modal-content select {
 		width: 100%;
-		padding: 10px;
-		margin-bottom: 15px;
+		padding: 8px;
+		margin-bottom: 5px; /* Giảm khoảng cách giữa các input */
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		font-size: 14px;
@@ -180,6 +180,23 @@
 		color: #000;
 		}
 
+		/* Tách form thành 2 cột và giới hạn chiều cao */
+		#pop-up-form {
+		max-height: 60vh; /* Giới hạn chiều cao của form */
+		overflow-y: auto; /* Thêm thanh cuộn nếu nội dung vượt quá */
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20px;
+		}
+		.form-column {
+		flex: 1;
+		min-width: 250px; /* Đảm bảo cột không quá hẹp trên màn hình nhỏ */
+		}
+
+		.delete-btn {
+			background-color: #dc3545;
+		}
+
 		/* Responsive */
 		@media (max-width: 768px) {
 		.table-container {
@@ -195,6 +212,9 @@
 			width: 90%;
 			padding: 15px;
 		}
+		.form-column {
+			min-width: 100%; /* Trên màn hình nhỏ, form trở về 1 cột */
+		}
 		}
 	</style>
 </head>
@@ -202,7 +222,7 @@
 	<%- include('../navbar') %>
 	<div class="table-container">
 		<h2>Danh sách Giáo Viên</h2>
-		<button class="add-btn" onclick="openModalCreate()"></button>
+		<button class="add-btn" onclick="openModalCreate()">Thêm giáo viên</button>
 		<table border="1">
 		<thead>
 			<tr>
@@ -229,8 +249,8 @@
 				<td><%= giaovien.GV_DiaChi %></td>
 				<td><%= giaovien.TBM_Ma %></td>
 				<td>
-				<button onclick="openModalEdit('<%= giaovien.GV_Ma %>', '<%= giaovien.GV_HoTen %>', '<%= giaovien.GV_NgaySinh %>', '<%= giaovien.GV_GioiTinh %>', '<%= giaovien.GV_SoDT %>', '<%= giaovien.GV_Mail %>', '<%= giaovien.GV_DiaChi %>', '<%= giaovien.TBM_Ma %>')">Edit</button>
-				<a href="/giao-vien/delete/<%= giaovien.GV_Ma %>" onclick="return confirm('Are you sure you want to delete this teacher?')">Delete</a>
+				<button class="update-btn" onclick="openModalEdit('<%= giaovien.GV_Ma %>', '<%= giaovien.GV_HoTen %>', '<%= giaovien.GV_NgaySinh %>', '<%= giaovien.GV_GioiTinh %>', '<%= giaovien.GV_SoDT %>', '<%= giaovien.GV_Mail %>', '<%= giaovien.GV_DiaChi %>', '<%= giaovien.TBM_Ma %>')">Sửa</button>
+				<button class="delete-btn" onclick="deleteObject('<%= giaovien.GV_Ma %>')" >Xoá</button>
 				</td>
 			</tr>
 			<% }) %>
@@ -243,37 +263,40 @@
 		<span class="close-btn" onclick="closeModal()">×</span>
 		<h2>Chỉnh sửa giáo viên</h2>
 		<form id="pop-up-form">
-			<input type="hidden" name="_method" value="PUT">
-			<label for="ma">Mã giáo viên:</label>
-			<input type="text" id="ma" name="GV_Ma" readonly>
-			<label for="ten">Tên giáo viên:</label>
-			<input type="text" id="ten" name="GV_HoTen" required>
-			<label for="ngaysinh">Ngày sinh:</label>
-			<input type="date" id="ngaysinh" name="GV_NgaySinh" required>
-			<label for="gioitinh">Giới tính:</label>
-			<select id="gioitinh" name="GV_GioiTinh" required>
-			<option value="Nam">Nam</option>
-			<option value="Nữ">Nữ</option>
-			<option value="Khác">Khác</option>
-			</select>
-			<label for="sdt">SĐT:</label>
-			<input type="text" id="sdt" name="GV_SoDT" required>
-			<label for="mail">Mail:</label>
-			<input type="email" id="mail" name="GV_Mail" required>
-			<label for="diachi">Địa chỉ:</label>
-			<input type="text" id="diachi" name="GV_DiaChi" required>
-			<label for="tbm">Tổ bộ môn:</label>
-			<select id="tbm" name="TBM_Ma">
-				<% tobomons.forEach(tobomon => { %>
-					<option value="<%= tobomon.TBM_Ma %>"><%= tobomon.TBM_Ten %></option>
-				<% }) %>
-			<button id="submitBtn" type="submit">Lưu</button>
-			<button type="button" onclick="closeModal()">Hủy</button>
+			<div class="form-column">
+				<label for="ma">Mã giáo viên:</label>
+				<input type="text" id="ma" name="GV_Ma" readonly>
+				<label for="ten">Tên giáo viên:</label>
+				<input type="text" id="ten" name="GV_HoTen" required>
+				<label for="ngaysinh">Ngày sinh:</label>
+				<input type="date" id="ngaysinh" name="GV_NgaySinh" required>
+				<label for="gioitinh">Giới tính:</label>
+				<select id="gioitinh" name="GV_GioiTinh" required>
+					<option value="0">Nam</option>
+					<option value="1">Nữ</option>
+				</select>
+			</div>
+			<div class="form-column">
+				<label for="sdt">SĐT:</label>
+				<input type="text" id="sdt" name="GV_SoDT" required>
+				<label for="mail">Mail:</label>
+				<input type="email" id="mail" name="GV_Mail" required>
+				<label for="diachi">Địa chỉ:</label>
+				<input type="text" id="diachi" name="GV_DiaChi" required>
+				<label for="tbm">Tổ bộ môn:</label>
+				<select id="tbm" name="TBM_Ma">
+					<% tobomons.forEach(tobomon => { %>
+						<option value="<%= tobomon.TBM_Ma %>"><%= tobomon.TBM_Ten %></option>
+					<% }) %>
+				</select>
+			</div>
+			<div style="width: 100%; margin-top: 10px;">
+				<button id="submitBtn" type="submit">Lưu</button>
+				<button type="button" onclick="closeModal()">Hủy</button>
+			</div>
 		</form>
 		</div>
 	</div>
-
-
 
 	<script>
 		function openModalEdit(ma, ten, ngaysinh, gioitinh, soDT, mail, diachi, tbm) {
@@ -289,8 +312,9 @@
 				console.error('Modal or form not found');
 				return;
 			}
-			form.action = `/giao-vien/edit/${ma}`;
+			form.action = `/giao-vien/${ma}`;
 			form.method = 'PUT';
+			form.reset();
 			form.querySelector('#ma').value = ma;
 			form.querySelector('#ten').value = ten;
 			form.querySelector('#ngaysinh').value = ngaysinh;
@@ -326,24 +350,105 @@
 				}
 
 				const result = await response.json();
-				alert('Cập nhật thành công!');
-				closeModal();
+				if (response.ok && result.message === 'Cập nhật giáo viên thành công') {
+					console.log('Cập nhật thành công:', result);
+					alert('Cập nhật thành công!');
+					closeModal();
+					window.location.reload();
+				}
+				
+				
 			} catch (error) {
 				console.error('Error:', error);
 				alert('Đã có lỗi xảy ra!');
 			}
 		}
 
-		
+		async function openModalCreate() {
+			const modal = document.getElementById('pop-up-modal');
+			const form = document.getElementById('pop-up-form');
+			const submitBtn = document.getElementById('submitBtn');
+			submitBtn.onclick = async (event) => {
+				event.preventDefault();
+				await submitCreateForm(form);
+			};
+
+			if (!modal || !form) {
+				console.error('Modal or form not found');
+				return;
+			}
+			const newGVID = await getNewGVID();
+			console.log('New GVID:', newGVID);
+			form.action = '/giao-vien';
+			form.method = 'POST';
+			form.reset(); 
+			form.querySelector('#ma').value = newGVID;
+			modal.style.display = 'flex';
+			modal.classList.add('show');
+		}
+
+		async function getNewGVID() {
+			try{
+				const response = await fetch('/giao-vien-new-id', {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+				const newGVID = await response.json();
+				console.log(newGVID);
+				return newGVID;
+			}
+			catch (error) {
+				console.error('Error fetching new GVID:', error);
+				return null;
+			}
+		}
+
+		async function submitCreateForm(form) {
+			if (!form) {
+				console.error('Form not found');
+				return;
+			}
+
+			const formData = new FormData(form);
+			const data = Object.fromEntries(formData);
+
+			try {
+				const response = await fetch(form.action, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				});
+
+				if (!response.ok) {
+					throw new Error('Lỗi khi tạo mới');
+				}
+
+				const result = await response.json();
+				if (response.ok && result.message === 'Thêm giáo viên thành công') {
+					console.log('Thêm thành công:', result);
+					alert('Thêm thành công!');
+					closeModal();
+					window.location.reload();
+				}
+				
+			} catch (error) {
+				console.error('Error:', error);
+				alert('Đã có lỗi xảy ra!');
+			}
+		}
 
 		function closeModal() {
-		const modal = document.getElementById('pop-up-modal');
-		if (modal) {
-			modal.classList.remove('show');
-			setTimeout(() => {
-			modal.style.display = 'none';
-			}, 300); // Chờ animation hoàn thành
-		}
+			const modal = document.getElementById('pop-up-modal');
+			if (modal) {
+				modal.classList.remove('show');
+				setTimeout(() => {
+					modal.style.display = 'none';
+				}, 300);
+			}
 		}
 
 		document.getElementById('pop-up-modal').onclick = function(event) {
@@ -352,29 +457,32 @@
 			}
 		};
 
-		document.getElementById('pop-up-form').addEventListener('submit', function(event) {
-			const ten = document.getElementById('ten').value;
-			const ngaysinh = document.getElementById('ngaysinh').value;
-			const gioitinh = document.getElementById('gioitinh').value;
-			const sdt = document.getElementById('sdt').value;
-			const mail = document.getElementById('mail').value;
-			const diachi = document.getElementById('diachi').value;
-			if (!ten || !ngaysinh || !gioitinh || !sdt || !mail || !diachi) {
-				alert('Vui lòng điền đầy đủ thông tin!');
-				event.preventDefault();
-				return;
+		async function deleteObject(ma) {
+			if (confirm('Bạn có chắc chắn muốn xóa giáo viên này?')) {
+				try {
+					const response = await fetch('/giao-vien/${ma}', {
+						method: 'DELETE',
+						headers: {'Content-Type': 'application/json'},
+						body: JSON.stringify({ GV_Ma: ma })
+					});
+
+					if (!response.ok) {
+						throw new Error('Lỗi khi xoá');
+					}
+
+					const result = await response.json();
+					if (response.ok && result.message === 'Xoá giáo viên thành công') {
+						console.log('Xoá thành công:', result);
+						alert('Xoá thành công!');
+						window.location.reload();
+					}
+					
+				} catch (error) {
+					console.error('Error:', error);
+					alert('Đã có lỗi xảy ra!');
+				}
 			}
-			if (!/^\S+@\S+\.\S+$/.test(mail)) {
-				alert('Email không hợp lệ!');
-				event.preventDefault();
-				return;
-			}
-			if (!/^\d{10}$/.test(sdt)) {
-				alert('SĐT phải là 10 chữ số!');
-				event.preventDefault();
-				return;
-			}
-		});
+		}
 	</script>
 </body>
 </html>

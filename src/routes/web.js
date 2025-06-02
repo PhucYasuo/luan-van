@@ -33,7 +33,8 @@ const {
     getOne,
     create,
     update,
-    remove
+    remove,
+    getNewId
 } = require('../controllers/giaoVienController');
 
 const router = express.Router();
@@ -69,5 +70,6 @@ router.get('/giao-vien/:GV_Ma', getOne);
 router.post('/giao-vien', create);
 router.put('/giao-vien/:GV_Ma', update);
 router.delete('/giao-vien/:GV_Ma', remove);
+router.get('/giao-vien-new-id', getNewId);
 
 module.exports = router; 
