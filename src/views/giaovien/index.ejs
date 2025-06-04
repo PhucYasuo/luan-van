@@ -64,7 +64,7 @@
 		transition: background-color 0.3s, transform 0.1s;
 		}
 		button:hover, a:hover {
-		background-color: #edf0f4;
+		background-color: #040404;
 		transform: translateY(-1px);
 		}
 		a[href*="/delete"] {
@@ -220,9 +220,19 @@
 </head>
 <body>
 	<%- include('../navbar') %>
+	<div class="department-filter">
+		<% tobomons.forEach(tobomon => {%>
+			<button value="<%= tobomon.TBM_Ma %>" onclick="filterDepartment(this)"><%= tobomon.TBM_Ten %></button>
+		<% }) %>
+		<button value="" onclick="filterDepartment(this)">Tất cả</button>
+	</div>
 	<div class="table-container">
 		<h2>Danh sách Giáo Viên</h2>
 		<button class="add-btn" onclick="openModalCreate()">Thêm giáo viên</button>
+		<div class="search">
+			<input type="text" id="searchInput" name="search" placeholder="Tìm kiếm theo tên hoặc mã giáo viên">
+			<button type="button" id="searchButton">Tìm kiếm</button>
+		</div>		
 		<table border="1">
 		<thead>
 			<tr>
@@ -239,20 +249,20 @@
 		</thead>
 		<tbody id="tableBody">
 			<% giaoviens.forEach(giaovien => { %>
-			<tr>
-				<td><%= giaovien.GV_Ma %></td>
-				<td><%= giaovien.GV_HoTen %></td>
-				<td><%= giaovien.GV_NgaySinh %></td>
-				<td><%= giaovien.GV_GioiTinh %></td>
-				<td><%= giaovien.GV_SoDT %></td>
-				<td><%= giaovien.GV_Mail %></td>
-				<td><%= giaovien.GV_DiaChi %></td>
-				<td><%= giaovien.TBM_Ma %></td>
-				<td>
-				<button class="update-btn" onclick="openModalEdit('<%= giaovien.GV_Ma %>', '<%= giaovien.GV_HoTen %>', '<%= giaovien.GV_NgaySinh %>', '<%= giaovien.GV_GioiTinh %>', '<%= giaovien.GV_SoDT %>', '<%= giaovien.GV_Mail %>', '<%= giaovien.GV_DiaChi %>', '<%= giaovien.TBM_Ma %>')">Sửa</button>
-				<button class="delete-btn" onclick="deleteObject('<%= giaovien.GV_Ma %>')" >Xoá</button>
-				</td>
-			</tr>
+				<tr data-mabm="<%= giaovien.TBM_Ma %>">
+					<td><%= giaovien.GV_Ma %></td>
+					<td><%= giaovien.GV_HoTen %></td>
+					<td><%= giaovien.GV_NgaySinh %></td>
+					<td><%= giaovien.GV_GioiTinh == 0 ? 'Nam' : 'Nữ' %></td>
+					<td><%= giaovien.GV_SoDT %></td>
+					<td><%= giaovien.GV_Mail %></td>
+					<td><%= giaovien.GV_DiaChi %></td>
+					<td><%= tobomons.find(tb => tb.TBM_Ma === giaovien.TBM_Ma)?.TBM_Ten || 'Không rõ' %></td>	
+					<td>
+						<button class="update-btn" onclick="openModalEdit('<%= giaovien.GV_Ma %>', '<%= giaovien.GV_HoTen %>', '<%= giaovien.GV_NgaySinh %>', '<%= giaovien.GV_GioiTinh %>', '<%= giaovien.GV_SoDT %>', '<%= giaovien.GV_Mail %>', '<%= giaovien.GV_DiaChi %>', '<%= giaovien.TBM_Ma %>')">Sửa</button>
+						<button class="delete-btn" onclick="deleteObject('<%= giaovien.GV_Ma %>')" >Xoá</button>
+					</td>
+				</tr>
 			<% }) %>
 		</tbody>
 		</table>
@@ -483,6 +493,38 @@
 				}
 			}
 		}
+
+		document.getElementById('searchButton').addEventListener('click', function () {
+			const keyword = document.getElementById('searchInput').value.toLowerCase();
+			const rows = document.querySelectorAll('#tableBody tr');
+
+			rows.forEach(row => {
+				const ma = row.cells[0].textContent.toLowerCase();
+				const ten = row.cells[1].textContent.toLowerCase();
+				if (ma.includes(keyword) || ten.includes(keyword)) {
+					row.style.display = '';
+				} else {
+					row.style.display = 'none';
+				}
+			});
+		});
+
+		function filterDepartment(button) {
+			const selectedTBM = button.value;
+			const rows = document.querySelectorAll('#tableBody tr');
+			console.log('Selected TBM:', selectedTBM);
+
+			rows.forEach(row => {
+				const rowMaBM = row.getAttribute('data-mabm');
+				console.log('Row TBM:', rowMaBM);
+				if (rowMaBM === selectedTBM || selectedTBM === '') {
+					row.style.display = '';
+				} else {
+					row.style.display = 'none';
+				}
+			});
+		}
+
 	</script>
 </body>
 </html>

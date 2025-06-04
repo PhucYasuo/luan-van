@@ -79,7 +79,7 @@ ALTER TABLE giaovien ADD CONSTRAINT check_gioitinh CHECK (GV_GioiTinh IN (0,1));
 
 INSERT INTO giaovien (GV_Ma, GV_HoTen, GV_NgaySinh, GV_GioiTinh, GV_SoDT, GV_Mail, GV_DiaChi, TBM_Ma) VALUES
 -- Toán Học - Tin Học
-('GV001', 'Nguyễn Văn A', '1985-06-15', 0, '0912345670', 'vana1@example.com', '123 Đường A', 'BM001'),
+('GV001', 'Dương Huỳnh Anh Thư', '2005-05-04', 1, '0912345670', 'anhthuduonghuynh455@gmail.com', '123 Đường A', 'BM001'),
 ('GV002', 'Nguyễn Thị B', '1986-07-20', 1, '0912345671', 'vanb2@example.com', '234 Đường B', 'BM001'),
 ('GV003', 'Trần Văn C', '1987-08-25', 0, '0912345672', 'vanc3@example.com', '345 Đường C', 'BM001'),
 ('GV004', 'Lê Thị D', '1988-09-30', 1, '0912345673', 'vand4@example.com', '456 Đường D', 'BM001'),
@@ -106,7 +106,7 @@ INSERT INTO giaovien (GV_Ma, GV_HoTen, GV_NgaySinh, GV_GioiTinh, GV_SoDT, GV_Mai
 
 -- Vật Lí - Hoá Học
 ('GV019', 'Trần Văn S', '1984-02-10', 0, '0912345688', 'vans19@example.com', '901 Đường S', 'BM005'),
-('GV020', 'Vũ Thị T', '1985-03-15', 1, '0912345689', 'vant20@example.com', '012 Đường T', 'BM005'),
+('GV020', 'Nguyễn Văn A', '1985-06-15', 0, '0912345689', 'vana1@example.com', '012 Đường T', 'BM005'),
 ('GV021', 'Hoàng Văn U', '1986-04-20', 0, '0912345690', 'vanu21@example.com', '123 Đường U', 'BM005'),
 ('GV022', 'Phạm Thị V', '1987-05-25', 1, '0912345691', 'vanv22@example.com', '234 Đường V', 'BM005'),
 
