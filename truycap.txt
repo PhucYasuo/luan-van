@@ -1,0 +1,10 @@
+homeController -> taikhoan, namhoc, hocky, giaovien, tobomon, chucvu
+giaoVienController -> giaovien, tobomon
+leaveController -> thoikhoabieu, giaovien, monhoc, phieunghiphep, chitietnghiphep  
+statisticController -> giaovien, phieunghiphep, chitietnghiphep
+
+
+18/06/2025
+delete chitietnghiphep, phieunghiphep
+create nhommonhoc, ngaynghichung, lichdaybu, hinhthucdaybu, trang thai, vanbanmc, tuan, vaitro, sohuuquyen
+update thoikhoabieu, taikhoan, quyen

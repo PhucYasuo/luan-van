@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Thời khóa biểu kéo thả</title>
+    <style>
+        body {
+        font-family: Arial;
+        padding: 20px;
+        }
+        .teacher {
+        background-color: #2f70c9;
+        color: white;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        cursor: move;
+        }
+        table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-left: 20px;
+        }
+        th, td {
+        border: 1px solid #c5c5c5;
+        width: 120px;
+        height: 60px;
+        text-align: center;
+        vertical-align: top;
+        }
+        th {
+        background-color: #2f70c9;
+        color: white;
+        }
+        td.dropzone {
+        background-color: #f0f4ff;
+        }
+    </style>
+</head>
+<body>
+    <%- include('navbar') %>
+    <div style="display: flex;">
+        <div style="width: 250px;">
+        <div class="teacher" draggable="true" data-info="Nguyễn Văn A - Toán">Nguyễn Văn A - Toán</div>
+        <div class="teacher" draggable="true" data-info="Nguyễn Văn B - Văn">Nguyễn Văn B - Văn</div>
+        <div class="teacher" draggable="true" data-info="Nguyễn Văn C - Lí">Nguyễn Văn C - Lí</div>
+        <div class="teacher" draggable="true" data-info="Nguyễn Văn D - Hoá">Nguyễn Văn D - Hoá</div>
+        </div>
+
+        <table>
+        <thead>
+            <tr>
+            <th>Tiết</th>
+            <th>Thứ 2</th>
+            <th>Thứ 3</th>
+            <th>Thứ 4</th>
+            <th>Thứ 5</th>
+            <th>Thứ 6</th>
+            <th>Thứ 7</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr>
+            <tr><td>2</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr>
+            <tr><td>3</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr>
+            <tr><td>4</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr>
+            <tr><td>5</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr>
+        </tbody>
+        </table>
+    </div>
+
+    <script>
+        let dragged;
+
+        document.querySelectorAll('.teacher').forEach(el => {
+            el.addEventListener('dragstart', e => {
+                dragged = e.target.getAttribute('data-info');
+            });
+        });
+
+        document.querySelectorAll('.dropzone').forEach(cell => {
+        cell.addEventListener('dragover', e => e.preventDefault());
+        cell.addEventListener('drop', e => {
+            e.preventDefault();
+            if (dragged) {
+                e.target.innerHTML = `<div style="background:#cce; padding:4px; border-radius:4px">${dragged}</div>`;
+            }
+        });
+        });
+    </script>
+</body>
+</html>

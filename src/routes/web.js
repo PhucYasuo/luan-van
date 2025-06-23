@@ -20,7 +20,8 @@ const {
 const {
     getApproveLP,
     getApproveLPDetail,
-    updateStatus
+    updateStatus,
+    sendResMail
 } = require('../controllers/approveController');
 
 const {
@@ -36,6 +37,10 @@ const {
     remove,
     getNewId
 } = require('../controllers/giaoVienController');
+
+const {
+    getSchedule
+} = require('../controllers/scheduleController');
 
 const router = express.Router();
 
@@ -59,6 +64,7 @@ router.post('/save-leave-data', saveLeaveData);
 router.get('/approve-lp', getApproveLP);
 router.get('/approve-lp-detail/:PNP_STT', getApproveLPDetail);
 router.post('/approve-lp-update', updateStatus);
+router.post('/send-res-mail', sendResMail);
 
 // statisticController
 router.get('/statistical-department-lp', getStatisticByDepartmentLp);
@@ -71,5 +77,8 @@ router.post('/giao-vien', create);
 router.put('/giao-vien/:GV_Ma', update);
 router.delete('/giao-vien/:GV_Ma', remove);
 router.get('/giao-vien-new-id', getNewId);
+
+// scheduleController
+router.get('/schedule', getSchedule);
 
 module.exports = router; 

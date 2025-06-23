@@ -57,7 +57,6 @@
         </form>
     </div>
     <script>
-        // Chức năng định dạng ngày tháng (cũng không thay đổi)
         function formatsDate(dateString) {
             if (!dateString) return "";
             const date = new Date(dateString);
@@ -71,9 +70,20 @@
             element.textContent = formatDate(originalDate);
         });
         
-        function submitForm(value) {
+        async function submitForm(value) {
             document.getElementById('actionValue').value = value;
             document.getElementById('approveForm').submit();
+
+            const response = await fetch('/send-res-mail', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    GV_Ma : "<%= detail.GV_Ma %>",
+                    value: value
+                })
+            });
         }
     </script>
 
