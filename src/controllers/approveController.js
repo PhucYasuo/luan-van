@@ -1,4 +1,3 @@
-const e = require('express');
 const connection = require('../config/database');
 const transporter = require('../config/mail');
 

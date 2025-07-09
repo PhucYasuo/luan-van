@@ -4,6 +4,7 @@ const cors = require("cors");
 const configViewEngine = require('./config/viewEngine');
 const webRoutes = require('./routes/web');
 const sessionMiddleware = require('./middleware/session');
+const getTodayMiddleware = require('./middleware/getToday');
 
 
 const app = express();
@@ -15,8 +16,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-// khai báo middleware session
+// khai báo middleware
 app.use(sessionMiddleware);
+app.use(getTodayMiddleware);
+
 
 // khai báo đường dẫn
 app.use('/',webRoutes);

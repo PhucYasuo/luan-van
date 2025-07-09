@@ -4,7 +4,9 @@ const {
     getDashboard,
     getSignIn,
     postSignIn,
-    getLogout
+    getLogout,
+    getHocKys,
+    getNamHocs
 } = require('../controllers/homeController');
 
 const {
@@ -42,6 +44,10 @@ const {
     getSchedule
 } = require('../controllers/scheduleController');
 
+const {
+    getDeclare
+} = require('../controllers/declareController');
+
 const router = express.Router();
 
 // homeController
@@ -50,6 +56,9 @@ router.get('/dashboard', getDashboard);
 router.get('/sign-in', getSignIn);
 router.post('/sign-in', postSignIn);
 router.get('/logout', getLogout);
+router.get('/hoc-kys', getHocKys);
+router.get('/nam-hocs', getNamHocs);
+
 
 // leaveController
 router.get('/leave-permission', getLeave);
@@ -80,5 +89,9 @@ router.get('/giao-vien-new-id', getNewId);
 
 // scheduleController
 router.get('/schedule', getSchedule);
+
+// declareController
+router.get('/declare', getDeclare);
+
 
 module.exports = router; 

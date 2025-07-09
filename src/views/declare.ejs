@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Kê khai</title>
+</head>
+<body>
+    <%- include('navbar') %>
+    <table border="0">
+        <tr>
+            <td>Học kỳ:</td>
+            <td><select id="hocKySelect"><option value="">-- Chọn học kỳ --</option></select></td>
+            <td>Năm học:</td>
+            <td><select id="namHocSelect"><option value="">-- Chọn năm học --</option></select></td>
+            <td>Tháng:</td>
+            <td><input type="text" value="9" size="2" /></td>
+        </tr>
+        <tr>
+            <td colspan="6">Từ tuần: <input type="text" value="1" size="2" /> Đến tuần: <input type="text" value="4" size="2" /></td>
+        </tr>
+    </table>
+
+    <div>
+        <h3>Số giờ được phân công</h3>
+            <table id="time-table" border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Môn</th>
+                    <th>Số tiết tháng</th>
+                </tr>
+                <% if (timeTable && timeTable.length > 0) { %>
+                    <% timeTable.forEach(row => { %>
+                        <tr>
+                            <td><%= row.Lop %></td>
+                            <td><%= row.TenMon %></td>
+                            <td><%= row.SoTiet %></td>
+                        </tr>
+                    <% })} %>
+                <tr>
+                    <td colspan="2">Tổng số tiết:</td>
+                    <td><%= timeTableSum %></td>
+                </tr>
+            </table>
+        <p><a href="#">Xem chi tiết</a></p>
+    </div>
+
+    <div>
+        <h3>Số giờ nghỉ phép có quyết định</h3>
+            <table id="time-table" border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Môn</th>
+                    <th>Số tiết tháng</th>
+                </tr>
+                <% if (approvedLeave && approvedLeave.length > 0) { %>
+                    <% approvedLeave.forEach(row => { %>
+                        <tr>
+                            <td><%= row.Lop %></td>
+                            <td><%= row.TenMon %></td>
+                            <td><%= row.SoTiet %></td>
+                        </tr>
+                    <% })} %>
+                <tr>
+                    <td colspan="2">Tổng số tiết:</td>
+                    <td><%= approvedLeaveSum %></td>
+                </tr>
+            </table>
+        <p><a href="#">Xem chi tiết</a></p>
+    </div>
+
+    <div>
+        <h3>Số giờ nghỉ việc riêng</h3>
+            <table id="time-table" border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Môn</th>
+                    <th>Số tiết tháng</th>
+                </tr>
+                <% if (personelAbsence && personelAbsence.length > 0) { %>
+                    <% personelAbsence.forEach(row => { %>
+                        <tr>
+                            <td><%= row.Lop %></td>
+                            <td><%= row.TenMon %></td>
+                            <td><%= row.SoTiet %></td>
+                        </tr>
+                    <% })} %>
+                <tr>
+                    <td colspan="2">Tổng số tiết:</td>
+                    <td><%= personelAbsenceSum %></td>
+                </tr>
+            </table>
+        <p><a href="#">Xem chi tiết</a></p>
+    </div>
+
+    <div>
+        <h3>Số giờ dạy bù</h3>
+            <table id="time-table" border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Môn</th>
+                    <th>Số tiết tháng</th>
+                </tr>
+                <% if (makeUp && makeUp.length > 0) { %>
+                    <% makeUp.forEach(row => { %>
+                        <tr>
+                            <td><%= row.Lop %></td>
+                            <td><%= row.TenMon %></td>
+                            <td><%= row.SoTiet %></td>
+                        </tr>
+                    <% })} %>
+                <tr>
+                    <td colspan="2">Tổng số tiết:</td>
+                    <td><%= makeUpSum %></td>
+                </tr>
+            </table>
+        <p><a href="#">Xem chi tiết</a></p>
+    </div>
+
+    <div>
+        <h3>Số giờ dạy thay</h3>
+            <table id="time-table" border="1" cellpadding="5" cellspacing="0">
+                <tr>
+                    <th>Lớp</th>
+                    <th>Môn</th>
+                    <th>Số tiết tháng</th>
+                </tr>
+                <% if (substitute && substitute.length > 0) { %>
+                    <% substitute.forEach(row => { %>
+                        <tr>
+                            <td><%= row.Lop %></td>
+                            <td><%= row.TenMon %></td>
+                            <td><%= row.SoTiet %></td>
+                        </tr>
+                    <% })} %>
+                <tr>
+                    <td colspan="2">Tổng số tiết:</td>
+                    <td><%= substituteSum %></td>
+                </tr>
+            </table>
+        <p><a href="#">Xem chi tiết</a></p>
+    </div>
+
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        //lấy ds học kỳ
+        async function fetchHocKys() {
+            try {
+                const response = await axios.get('/hoc-kys');
+                console.log(response.data);
+                const results = response.data;
+                const hocKySelect = document.getElementById('hocKySelect');
+                results.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.HK_HocKy;
+                    option.textContent = item.HK_HocKy;
+                    hocKySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy học kỳ:', error.message);
+            }
+        }
+        
+        //lấy ds năm học
+        async function fetchNamHocs() {
+            try {
+                const response = await axios.get('/nam-hocs');
+                const results = response.data;
+                const namHocSelect = document.getElementById('namHocSelect');
+                results.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.NH_NamHoc;
+                option.textContent = item.NH_NamHoc;
+                namHocSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Lỗi khi lấy năm học:', error.message);
+            }
+        }
+    
+        //thực hiện khi tải trang
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([fetchHocKys(), fetchNamHocs()]);
+            
+        });
+    </script>
+</body>
+</html>

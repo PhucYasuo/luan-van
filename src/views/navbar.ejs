@@ -3,18 +3,23 @@
         
             <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
 
-            <% if (user.permission === 'Q0003') { %>
-                <li class="nav-item"><a class="nav-link" href="/schedule">Sắp thời khoá biểu</a></li>
-                <!--  -->
+            <% if (Object.values(user.permissions).some(list => list.includes('Q0002'))) { %>
                 <li class="nav-item"><a class="nav-link" href="/giao-vien">Cập nhật giáo viên</a></li>
             <% } %>
 
-            <% if (user.permission === 'Q0004') { %>
-                <!-- <li class="nav-item"><a class="nav-link" href="/approve-lp">Duyệt đơn</a></li> -->
-                <li class="nav-item"><a class="nav-link" href="/statistical-department-lp">Thống kê nhật ký giảng dạy của tổ</a></li>
+            <% if (Object.values(user.permissions).some(list => list.includes('Q0003'))) { %>
+                <li class="nav-item"><a class="nav-link" href="/leave-permission">Xin nghỉ</a></li>
             <% } %>
 
-            <li class="nav-item"><a class="nav-link" href="/leave-permission">Xin nghỉ</a></li>
+            <% if (Object.values(user.permissions).some(list => list.includes('Q0004'))) { %>
+                <li class="nav-item"><a class="nav-link" href="/declare">Kê khai</a></li>
+            <% } %>
+
+            <% if (Object.values(user.permissions).some(list => list.includes('Q0005'))) { %>
+                <li class="nav-item"><a class="nav-link" href="/schedule">Lập thời khoá biểu</a></li>
+            <% } %>
+
+            
 
             <li class="nav-item"><a class="nav-link" href="/logout">Đăng xuất</a></li>
     </ul>

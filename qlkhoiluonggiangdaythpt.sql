@@ -344,12 +344,13 @@ CREATE TABLE nhiemvu (
 )ENGINE=InnoDB;
 
 INSERT INTO nhiemvu (NV_Ma, NV_Ten, NV_SoTietMien) VALUES 
-('NV001', 'Huấn luyện đội tuyển học sinh giỏi', 20), 
-('NV002', 'Hướng nghiệp', 5), 
-('NV003', 'Dạy nghề', 10), 
-('NV004', 'Hoạt động ngoại khóa', 5), 
-('NV005', 'Mở lớp cảm tình đoàn', 5),
-('NV006', 'Chủ nhiệm', 10);
+('NV001', 'Huấn luyện đội tuyển học sinh giỏi', 8),
+('NV002', 'Hướng nghiệp', 2),
+('NV003', 'Dạy nghề', 4),
+('NV004', 'Hoạt động ngoại khóa', 2),
+('NV005', 'Mở lớp cảm tình đoàn', 1),
+('NV006', 'Chủ nhiệm', 6);
+
 
 CREATE TABLE kiemnhiem (
   GV_Ma char(5) NOT NULL,
@@ -1636,6 +1637,7 @@ CREATE TABLE thoikhoabieu (
   TKB_TietBD int NOT NULL,
   TKB_SoTiet int NOT NULL,
   T_Ma char(7) NOT NULL,
+  TT_Ma char(5) NOT NULL DEFAULT 'TT001',
 
   PRIMARY KEY (TKB_ID),
   FOREIGN KEY (GV_Ma) REFERENCES giaovien (GV_Ma) ON DELETE CASCADE ON UPDATE CASCADE,
