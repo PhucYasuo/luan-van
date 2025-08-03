@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Xin nghỉ</title>
+    <style>
+        /* CSS nội tuyến mẫu, bạn có thể chuyển ra file .css riêng */
+        .left-panel { width: 300px; float: left; padding: 20px; }
+        .right-panel { margin-left: 320px; padding: 20px; }
+        .day-button { margin: 5px 0; padding: 5px 10px; cursor: pointer; }
+        .day-button.active { background-color: orange; color: white; }
+        .lesson-box { border: 1px solid black; padding: 10px; margin: 10px; display: inline-block; width: 250px; vertical-align: top; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="left-panel">
+        <h3>Xin nghỉ</h3>
+        <form id="dateForm" method="GET" action="/leave-check-range">
+            <label for="fromDate">Từ ngày:</label>
+            <input type="date" id="fromDate" name="fromDate" required><br>
+
+            <label for="toDate">Đến ngày:</label>
+            <input type="date" id="toDate" name="toDate" required><br><br>
+
+            <button type="submit">Xác nhận</button>
+        </form>
+
+        <div id="buttonContainer" class="button-container"></div>
+    </div>
+
+    <div class="right-panel">
+        
+    </div>
+  
+    <script>
+        document.getElementById('dateForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Ngăn form submit mặc định
+
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            try {
+                const response = await axios.get('/leave-check-range', {
+                    params: { fromDate, toDate }
+                });
+
+                const dates = response.data.dates; // Lấy mảng dates từ backend
+
+                // Xóa các button cũ nếu có
+                const buttonContainer = document.getElementById('buttonContainer');
+                buttonContainer.innerHTML = '';
+
+                // Tạo button cho mỗi ngày
+                dates.forEach(date => {
+                    const button = document.createElement('button');
+                    button.textContent = date.TKB_Ngay; // Lấy TKB_Ngay từ object
+                    button.className = 'date-button';
+                    button.addEventListener('click', () => {
+                        
+                    });
+                    buttonContainer.appendChild(button);
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Đã có lỗi xảy ra khi lấy dữ liệu!');
+            }
+        });
+
+        function toggleDayButton(button) {
+            const isActive = button.classList.contains('active');
+            button.classList.toggle('active', !isActive);
+            button.style.backgroundColor = isActive ? '' : 'orange';
+            button.style.color = isActive ? '' : 'white';
+        }
+
+        function onStatusChange(select, idx) {
+            const extra = document.getElementById('extraFields' + idx);
+            const value = select.value;
+            extra.innerHTML = '';
+
+            if (value === 'nghi') {
+                extra.innerHTML = 'Đính kèm: <input type="file" name="file"><br>';
+            } else if (value === 'daythay') {
+                extra.innerHTML = 'Giáo viên: <input type="text" name="substitute"><br>';
+            } else if (value === 'daybu') {
+                extra.innerHTML = `
+                Ngày: <input type="date" name="makeupDate"><br>
+                Giờ bắt đầu: <input type="time" name="startTime"><br>
+                Hình thức:
+                <label><input type="radio" name="mode" value="offline" checked> Offline</label>
+                <label><input type="radio" name="mode" value="online"> Online</label><br>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 const fakeToday = (req, res, next) => {
-    req.today = new Date(process.env.TODAY_DEMO);
+    req.today = process.env.TODAY_DEMO
     next();
   };
   

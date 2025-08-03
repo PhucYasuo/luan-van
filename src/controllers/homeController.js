@@ -1,3 +1,4 @@
+const e = require('cors');
 const connection = require('../config/database');
 
 const getHomepage = (req, res) => {
@@ -30,41 +31,24 @@ const postSignIn = async (req, res) => {
         const [accounts] = await getAccount(account, password);
         if (accounts) {
 			req.session.user = {};
-			console.log("Tài khoản đăng nhập:", accounts.TK_Ma);
-			const permissions = await getPermission(accounts.TK_Ma);
-			req.session.user.permissions = getPermissionByRole(permissions);
+
+			await assignPermission(req, res, accounts.TK_Ma);
 			console.log("Danh sách quyền:", req.session.user.permissions);
 			
-
 			const today = getToDay(req); // yyyy-mm-dd
-			const [schoolYears] = await getSchoolYear(today);
-
-			req.session.user.namHoc = schoolYears.NH_NamHoc;
-			
-			const semesters = await getSemester(today, schoolYears.NH_NgayDauNam);
-			if (semesters) {
-				req.session.user.hocKy = semesters.HK_HocKy;	
-			}else {
-				req.session.user.hocKy = "H";
-			}
-
+			await assignSchoolYear(req, res, today);
+			await assignSemester(req, res, today, req.session.user.ngayDauNam);
 			req.session.user.maGV = accounts.GV_Ma;
-
-            const [positions] = await getPostion(req.session.user.maGV, req.session.user.hocKy, req.session.user.namHoc);
-            if (positions) {
-				req.session.user.maCV = positions.CV_Ma;
-				req.session.user.tenCV = positions.CV_Ten;
-            } else {
-                req.session.user.maCV = "";
-				req.session.user.tenCV = "Giáo viên";
-            }
+			await assignTeacherInfo(req, res, req.session.user.maGV);
+			await assignDepartmentName(req, res, req.session.user.maBM);
+			await assignPostion(req, res, req.session.user.maGV, req.session.user.hocKy, req.session.user.namHoc);
 			
-			const [teachers] = await getTeacher(req.session.user.maGV);
-			req.session.user.maBM = teachers.TBM_Ma;
-			req.session.user.tenGV = teachers.GV_HoTen;
-
-			const [deapartments] = await getDepartment(req.session.user.maBM);
-			req.session.user.tenBM = deapartments.TBM_Ten;
+			if(req.session.user.gioiTinh == 0) {
+				req.session.user.gioiTinhShow = "Nam";
+			}
+			else if(req.session.user.gioiTinh == 1) {
+				req.session.user.gioiTinhShow = "Nữ";
+			}
             
             res.redirect(`/dashboard`); 
         } else {
@@ -84,34 +68,44 @@ const getAccount = async (account, password) => {
     return results;
 };
 
-const getPermission = async (maTK) => {
+const assignPermission = async (req, res, maTK) => {
 	const [results] = await connection.promise().query(
 		'SELECT VT_Ma, Q_Ma FROM sohuuquyen WHERE TK_Ma = ?',
 		[maTK]
 	);
-	
-	return results;
+	if (results.length > 0) {
+		const quyenTheoVaiTro = getPermissionByRole(results);
+		req.session.user.permissions = quyenTheoVaiTro;
+	} else {
+		throw new Error('Không tìm thấy quyền truy cập cho tài khoản này');
+	}
 };
 
-const getSchoolYear = async (today) => {
+const assignSchoolYear = async (req, res, today) => {
 	const [results] = await connection.promise().query(
 		'SELECT * FROM namhoc WHERE NH_NgayDauNam < ? ORDER BY NH_NgayDauNam DESC LIMIT 1',
 		[today]
 	);
-	return results;
+	if (results.length > 0) {
+		req.session.user.namHoc = results[0].NH_NamHoc;
+		req.session.user.ngayDauNam = results[0].NH_NgayDauNam;
+	} else {
+		throw new Error('Không tìm thấy năm học phù hợp');
+	}
 };
 
-const getSemester = async (today, ngayDauNam) => {
+const assignSemester = async (req, res, today, ngayDauNam) => {
 	const [results] = await connection.promise().query('select * from hocky');
 	const soNgay = countDaysBetween(ngayDauNam, today);
 	if (soNgay < results[0].HK_SoTuan*7)
-		return results[0];
+		req.session.user.hocKy = results[0].HK_HocKy;
 	else if (soNgay < (results[0].HK_SoTuan*7 + results[1].HK_SoTuan*7))
-		return results[1];
-	return null;
+		req.session.user.hocKy = results[1].HK_HocKy;
+	else
+		req.session.user.hocKy = "H"; // Học kỳ hè
 };
 
-const getPostion = async (maGV, hocKy, namHoc) => {
+const assignPostion = async (req, res, maGV, hocKy, namHoc) => {
 	const [results] = await connection.promise().query(
 		'SELECT CV_Ma FROM giuchucvu WHERE GV_Ma = ? AND HK_HocKy = ? AND NH_NamHoc = ?',
 		[maGV, hocKy, namHoc]
@@ -121,25 +115,48 @@ const getPostion = async (maGV, hocKy, namHoc) => {
 			'SELECT * FROM chucvu WHERE CV_Ma = ?',
 			[results[0].CV_Ma]
 		);
-		return chucVuResults;
+		if (chucVuResults.length > 0) {
+			req.session.user.maCV = chucVuResults[0].CV_Ma;
+			req.session.user.tenCV = chucVuResults[0].CV_Ten;
+		}else {
+			throw new Error('Không tìm thấy thông tin chức vụ cho giáo viên này');
+		}
 	}
-	return null;
+	else {
+		req.session.user.maCV = "";
+		req.session.user.tenCV = "Giáo viên";
+	}
 };
 
-const getTeacher = async (maGV) => {
+const assignTeacherInfo = async (req, res, maGV) => {
 	const [results] = await connection.promise().query(
 		'SELECT * FROM giaovien WHERE GV_Ma = ?',
 		[maGV]
 	);
-	return results;
+	if (results.length > 0) {
+		req.session.user.maGV = results[0].GV_Ma;
+		req.session.user.tenGV = results[0].GV_HoTen;
+		req.session.user.ngaySinh = results[0].GV_NgaySinh;
+		req.session.user.gioiTinh = results[0].GV_GioiTinh;
+		req.session.user.email = results[0].GV_Mail;
+		req.session.user.sdt = results[0].GV_SoDT;
+		req.session.user.diaChi = results[0].GV_DiaChi;
+		req.session.user.maBM = results[0].TBM_Ma;
+	} else {
+		throw new Error('Không tìm thấy thông tin giáo viên');
+	}
 };
 
-const getDepartment = async (maBM) => {
+const assignDepartmentName = async (req, res, maBM) => {
 	const [results] = await connection.promise().query(
 		'SELECT * FROM tobomon WHERE TBM_Ma = ?',
 		[maBM]
 	);
-	return results;
+	if (results.length > 0) {
+		req.session.user.tenBM = results[0].TBM_Ten;
+	} else {
+		throw new Error('Không tìm thấy tên bộ môn');
+	}
 }
 
 function getPermissionByRole(permissions) {
@@ -167,7 +184,7 @@ const getLogout = (req, res) => {
 };
 
 function getToDay(req) {
-	const today = req.today;
+	const today = new Date(req.today);
 	const yyyy = today.getFullYear();
 	const mm = String(today.getMonth() + 1).padStart(2, '0'); // thêm số 0 phía trước nếu cần
 	const dd = String(today.getDate()).padStart(2, '0');
@@ -187,14 +204,15 @@ const getHocKys = async (req, res) => {
         SELECT HK_HocKy
         FROM hocky`
     );
-	console.log("Kỳ học:", results);
     return res.json(results);
 }
 
 const getNamHocs = async (req, res) => {
     const [results] = await connection.promise().query(`
         SELECT NH_NamHoc
-        FROM namhoc`
+        FROM namhoc
+		WHERE NH_NgayDauNam < ?`,
+		[req.today]
     );
     return res.json(results);
 }

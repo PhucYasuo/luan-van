@@ -1,18 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang chủ</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <%- include('navbar') %>
-    <p>Chào mừng giáo viên: <%= user.tenGV %></p>
-    <p>Học kỳ: <%= user.hocKy %></p>
-    <p>Năm học: <%= user.namHoc %></p>
-    <p>Mã bộ môn: <%= user.maBM %></p>
-    <p>Mã chức vụ: <%= user.maCV %></p>
-    <p>Chức vụ: <%= user.tenCV %></p>
 
+    <div class="container dashboard-container">
+        <h1>Thông tin cá nhân</h1>
+    
+        <div class="info-grid">
+            <div class="info-box">
+                <label>Mã giáo viên:</label>
+                <span><%= user.maGV %></span>
+            </div>
+            <div class="info-box">
+                <label>Họ và tên:</label>
+                <span><%= user.tenGV %></span>
+            </div>
+    
+            <div class="info-box">
+                <label>Ngày sinh:</label>
+                <span id="ngay-sinh" ><%= user.ngaySinh %></span>
+            </div>
+            <div class="info-box">
+                <label>Giới tính:</label>
+                <span><%= user.gioiTinhShow %></span>
+            </div>
+    
+            <div class="info-box">
+                <label>Số điện thoại:</label>
+                <span><%= user.sdt %></span>
+            </div>
+            <div class="info-box">
+                <label>Email:</label>
+                <span><%= user.email %></span>
+            </div>
+    
+            <div class="info-box">
+                <label>Chức vụ:</label>
+                <span><%= user.tenCV %></span>
+            </div>
+            <div class="info-box">
+                <label>Bộ môn:</label>
+                <span><%= user.tenBM %></span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const span = document.getElementById("ngay-sinh");
+            const original = span?.textContent.trim(); // optional chaining
+    
+            if (original && original.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [year, month, day] = original.split("-");
+                span.textContent = `${day}/${month}/${year}`;
+            }
+        });
+    </script>
+    
 </body>
 </html>

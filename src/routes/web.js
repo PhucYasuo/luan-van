@@ -10,21 +10,9 @@ const {
 } = require('../controllers/homeController');
 
 const {
-    getLeave,
-    postClass,
-    getSubject,
-    getTeacher,
-    postResultLP,
-    createWordMultiple,
-    saveLeaveData
+    getLeaveReport,
+    getLeaveCheckRange
 } = require('../controllers/leaveController');
-
-const {
-    getApproveLP,
-    getApproveLPDetail,
-    updateStatus,
-    sendResMail
-} = require('../controllers/approveController');
 
 const {
     getStatisticByDepartmentLp,
@@ -45,7 +33,9 @@ const {
 } = require('../controllers/scheduleController');
 
 const {
-    getDeclare
+    getDeclare,
+    getMonth,
+    getDataDeclare
 } = require('../controllers/declareController');
 
 const router = express.Router();
@@ -61,19 +51,8 @@ router.get('/nam-hocs', getNamHocs);
 
 
 // leaveController
-router.get('/leave-permission', getLeave);
-router.post('/get-classes', postClass);
-router.get('/get-teachers', getTeacher);
-router.get('/get-subject', getSubject);
-router.post('/result-leave-permission', postResultLP);
-router.post('/create-word-multiple', createWordMultiple);
-router.post('/save-leave-data', saveLeaveData);
-
-// approveController
-router.get('/approve-lp', getApproveLP);
-router.get('/approve-lp-detail/:PNP_STT', getApproveLPDetail);
-router.post('/approve-lp-update', updateStatus);
-router.post('/send-res-mail', sendResMail);
+router.get('/leave-report', getLeaveReport);
+router.get('/leave-check-range', getLeaveCheckRange);
 
 // statisticController
 router.get('/statistical-department-lp', getStatisticByDepartmentLp);
@@ -92,6 +71,8 @@ router.get('/schedule', getSchedule);
 
 // declareController
 router.get('/declare', getDeclare);
+router.get('/declare-month', getMonth);
+router.get('/declare-data', getDataDeclare);
 
 
 module.exports = router; 
