@@ -11,7 +11,9 @@ const {
 
 const {
     getLeaveReport,
-    getLeaveCheckRange
+    getLeaveCheckRange,
+    postLeaveData,
+    postUploadFile
 } = require('../controllers/leaveController');
 
 const {
@@ -53,6 +55,9 @@ router.get('/nam-hocs', getNamHocs);
 // leaveController
 router.get('/leave-report', getLeaveReport);
 router.get('/leave-check-range', getLeaveCheckRange);
+router.post('/save-leave-data', postLeaveData);
+router.post('/upload-file', postUploadFile);
+
 
 // statisticController
 router.get('/statistical-department-lp', getStatisticByDepartmentLp);

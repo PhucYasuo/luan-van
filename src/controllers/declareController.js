@@ -46,14 +46,14 @@ const getPersonelAbsence = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
         SELECT 
             CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop, 
-            m.M_Ten AS TenLop, 
+            m.M_Ten AS TenMon, 
             SUM(tkb.TKB_SoTiet) AS SoTiet
         FROM thoikhoabieu tkb, monhoc m
         WHERE tkb.M_Ma = m.M_Ma
-        AND tkb.NH_NamHoc = '2024-2025'
-        AND tkb.GV_Ma = 'GV001'
+        AND tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
         AND tkb.TT_Ma = 'TT002'
-        AND tkb.TKB_Ngay BETWEEN '2024-09-30' AND '2024-11-03'
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
         AND NOT EXISTS (
             SELECT 1 
             FROM dinhkem dk 
@@ -92,7 +92,7 @@ const getSubstitute = async (req, namHoc, firstDay, lastDay) => {
         FROM thoikhoabieu tkb, monhoc m
         WHERE tkb.M_Ma = m.M_Ma
         AND tkb.NH_NamHoc = ?
-        AND tkb.GV_Ma = ?
+        AND tkb.GV_DayThay = ?
         AND tkb.TT_Ma = 'TT004'
         AND tkb.TKB_Ngay BETWEEN ? AND ?
         GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,

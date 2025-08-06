@@ -3,39 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <title>Xin nghỉ</title>
-    <style>
-        /* CSS nội tuyến mẫu, bạn có thể chuyển ra file .css riêng */
-        .left-panel { width: 300px; float: left; padding: 20px; }
-        .right-panel { margin-left: 320px; padding: 20px; }
-        .day-button { margin: 5px 0; padding: 5px 10px; cursor: pointer; }
-        .day-button.active { background-color: orange; color: white; }
-        .lesson-box { border: 1px solid black; padding: 10px; margin: 10px; display: inline-block; width: 250px; vertical-align: top; }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+    <%- include('navbar') %>
     <div class="left-panel">
-        <h3>Xin nghỉ</h3>
-        <form id="dateForm" method="GET" action="/leave-check-range">
+        <form id="dateForm" class="leave-form" method="GET" action="/leave-check-range">
             <label for="fromDate">Từ ngày:</label>
-            <input type="date" id="fromDate" name="fromDate" required><br>
+            <input type="date" id="fromDate" name="fromDate" required>
 
             <label for="toDate">Đến ngày:</label>
-            <input type="date" id="toDate" name="toDate" required><br><br>
+            <input type="date" id="toDate" name="toDate" required>
 
-            <button type="submit">Xác nhận</button>
+            <div class="form-button-right">
+                <button type="submit">Xác nhận</button>
+            </div>
         </form>
 
+
         <div id="buttonContainer" class="button-container"></div>
+        <div class="file-upload-container">
+            <input type="file" id="externalFileInput" multiple style="display: none;">
+            <button class="upload-btn" onclick="document.getElementById('externalFileInput').click()">Chọn file minh chứng</button>
+            <div class="external-file-list" id="externalFileList"></div>
+        </div>
     </div>
 
-    <div class="right-panel">
+    <div class="right-panel" id="lessonContainer">
         
     </div>
+
+    <div class="save-all-button-container">
+        <button class="save-all-btn" onclick="handleSaveAll()">Lưu tất cả</button>
+    </div>
+    
   
     <script>
+        const user = JSON.parse('<%- JSON.stringify(user) %>'); // Lấy thông tin người dùng từ backend
         document.getElementById('dateForm').addEventListener('submit', async function(event) {
             event.preventDefault(); // Ngăn form submit mặc định
+            localStorage.clear(); // Xóa localStorage trước khi lấy dữ liệu mới
 
             const fromDate = document.getElementById('fromDate').value;
             const toDate = document.getElementById('toDate').value;
@@ -46,17 +54,386 @@
                 });
 
                 const dates = response.data.dates; // Lấy mảng dates từ backend
-
+                
                 // Xóa các button cũ nếu có
                 const buttonContainer = document.getElementById('buttonContainer');
                 buttonContainer.innerHTML = '';
-
+                const rightPanel = document.querySelector('.right-panel');
+                rightPanel.innerHTML = ''; // Xóa nội dung cũ trong right panel
+                let distinctDates = new Set();
                 // Tạo button cho mỗi ngày
                 dates.forEach(date => {
+                    // Kiểm tra xem ngày đã tồn tại trong Set chưa
+                    if (distinctDates.has(date.TKB_Ngay)) return; // Nếu đã tồn tại, bỏ qua
+                    distinctDates.add(date.TKB_Ngay); // Thêm ngày vào Set để đảm bảo duy nhất
                     const button = document.createElement('button');
-                    button.textContent = date.TKB_Ngay; // Lấy TKB_Ngay từ object
+                    button.textContent = formateDate(date.TKB_Ngay); // Lấy TKB_Ngay từ object
+                    button.value = date.TKB_Ngay; // Lưu ngày vào value của button
                     button.className = 'date-button';
                     button.addEventListener('click', () => {
+                        toggleDayButton(button);
+                        const lessonContainer = document.getElementById('lessonContainer');
+                        lessonContainer.innerHTML = ''; // Xóa nội dung cũ
+                        // Tạo lesson box cho mỗi môn học
+                        let distinctLessons = new Set();
+                        dates.forEach(lesson => {
+                            if (distinctLessons.has(`${lesson.TKB_Ngay}_${lesson.K_Khoi}${lesson.KH_KyHieu}${lesson.L_STTLop}_${lesson.M_Ma}`)) return;
+                            distinctLessons.add(`${lesson.TKB_Ngay}_${lesson.K_Khoi}${lesson.KH_KyHieu}${lesson.L_STTLop}_${lesson.M_Ma}`); // Thêm tiết vào Set để đảm bảo duy nhất
+                            if (lesson.TKB_Ngay === button.value) { // Chỉ hiển thị lesson cho ngày được chọn
+                                const lessonBox = document.createElement('div');
+                                lessonBox.className = 'lesson-box';
+                                const name = `${lesson.TKB_Ngay}_${lesson.K_Khoi}${lesson.KH_KyHieu}${lesson.L_STTLop}_${lesson.M_Ma}_${lesson.TKB_TietBD}`;
+                                lessonBox.innerHTML = `
+                                    <strong>${lesson.K_Khoi}${lesson.KH_KyHieu}${lesson.L_STTLop} - ${lesson.M_Ten}</strong><br>
+                                    <strong>Thứ:</strong> ${dayOfWeek(lesson.TKB_Ngay)}<br>
+                                    <strong>Tiết:</strong> ${returnTiet(lesson.TKB_TietBD,lesson.TKB_SoTiet)}<br>
+                                    <strong>Trạng thái:</strong>
+                                    <select class="trang-thai" name="${name}_trangthai">
+                                        <option name="${name}_option1" value="${lesson.TT_Ma}" selected>${lesson.TT_Ten}</option>
+                                    </select><br>
+                                    <div class="replace-method" hidden name="${name}_replaceDiv">
+                                        <label class="radio-option">
+                                            <input type="radio" name="${name}_replaceMethod" value="DayBu"> Dạy bù
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="${name}_replaceMethod" value="DayThay"> Dạy thay
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="${name}_replaceMethod" value="NghiMC"> Nghỉ có minh chứng
+                                        </label>
+                                    </div>
+
+
+                                    <div class="substitute-method" hidden name="${name}_substituteDiv">
+                                        <label for="substituteTeacher">Giáo viên thay thế:</label>
+                                        <select class="substituteTeacher" name="${name}_substituteTeacher">
+                                            <option value="">Chọn giáo viên</option>
+                                            <% teachers.forEach(teacher => { %>
+                                                <option value="<%= teacher.GV_Ma %>"><%= teacher.GV_HoTen %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+
+                                    <div class="makeup-method" hidden name="${name}_makeupDiv">
+                                        <div class="row-flex">
+                                            <div class="input-group">
+                                                <label for="makeupDate">Ngày dạy bù:</label>
+                                                <input type="date" id="makeupDate" name="${name}_makeupDate">
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="makeupTime">Tiết dạy bù:</label>
+                                                <select class="makeup-time-select" name="${name}_makeupTime">
+                                                    <option value="">Chọn tiết</option>
+                                                    <!-- Thêm option bằng JavaScript -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <label for="makeupMethod">Hình thức dạy bù:</label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="${name}_makeupMethod" value="HT001"> Trực tiếp
+                                            <input type="radio" name="${name}_makeupMethod" value="HT002"> Trực tuyến
+                                        </label>
+                                    </div>
+
+                                    <div class="leave-method" hidden name="${name}_leaveDiv">
+                                        <div class="drop-area">
+                                            <p>Tải lên file minh chứng ở bên trái và kéo thả file minh chứng vào đây</p>
+                                            <input type="file" class="file-input" multiple style="display: none;" name="${name}_fileInput">
+                                            <div class="file-list" name="${name}_fileList"></div>
+                                        </div>
+                                    </div>
+
+                                `;
+                                lessonContainer.appendChild(lessonBox);
+                                const select = lessonBox.querySelector(`select[name="${name}_trangthai"]`);
+                                if (lesson.TT_Ma === 'TT002') {
+                                    select.innerHTML += `<option value="TT001">Dạy</option>`;
+                                } else {
+                                    select.innerHTML += `<option value="TT002">Nghỉ</option>`;
+                                }
+
+                                
+                                const replaceDiv = lessonBox.querySelector(`div[name="${name}_replaceDiv"]`);
+                                const methodMakeup = lessonBox.querySelector(`div[name="${name}_makeupDiv"]`);
+                                const methodSubstitute = lessonBox.querySelector(`div[name="${name}_substituteDiv"]`);
+                                const methodLeave = lessonBox.querySelector(`div[name="${name}_leaveDiv"]`);
+                                select.addEventListener('change', function () {
+                                    if (this.value === 'TT002') {
+                                        replaceDiv.hidden = false;
+                                        if(localStorage.getItem(`${name}_replaceMethod`) === 'DayBu') { // Nếu đã chọn Dạy bù
+                                            methodMakeup.hidden = false;
+                                            methodSubstitute.hidden = true;
+                                            methodLeave.hidden = true;
+                                        } else if(localStorage.getItem(`${name}_replaceMethod`) === 'DayThay') { // Nếu đã chọn Dạy thay
+                                            methodMakeup.hidden = true;
+                                            methodSubstitute.hidden = false;
+                                            methodLeave.hidden = true;
+                                        } else if(localStorage.getItem(`${name}_replaceMethod`) === 'NghiMC') { // Nếu đã chọn Nghỉ có minh chứng
+                                            methodMakeup.hidden = true;
+                                            methodSubstitute.hidden = true;
+                                            methodLeave.hidden = false;
+                                        }
+                                    } else {
+                                        replaceDiv.hidden = true;
+                                        methodMakeup.hidden = true;
+                                        methodSubstitute.hidden = true;
+                                        methodLeave.hidden = true;
+                                    }
+                                    localStorage.setItem(`${name}_trangthai`, this.value);
+                                });
+
+                                const radios = lessonBox.querySelectorAll(`input[name="${name}_replaceMethod"]`);    
+
+                                radios.forEach(radio => {
+                                    radio.addEventListener('change', function () {
+                                        if (this.value === 'DayBu') {
+                                            methodMakeup.hidden = false;
+                                            methodSubstitute.hidden = true;
+                                            methodLeave.hidden = true;
+                                            localStorage.setItem(`${name}_replaceMethod`, 'DayBu');
+                                        } else if (this.value === 'DayThay') {
+                                            methodMakeup.hidden = true;
+                                            methodSubstitute.hidden = false;
+                                            methodLeave.hidden = true;
+                                            localStorage.setItem(`${name}_replaceMethod`, 'DayThay');
+                                        } else if (this.value === 'NghiMC') {
+                                            methodMakeup.hidden = true;
+                                            methodSubstitute.hidden = true;
+                                            methodLeave.hidden = false;
+                                            localStorage.setItem(`${name}_replaceMethod`, 'NghiMC');
+                                        }
+                                    });
+                                });
+
+                                lessonBox.querySelectorAll('.drop-area').forEach(dropArea => {
+                                    const fileInput = dropArea.querySelector(`input[name="${name}_fileInput"]`);
+                                    const fileList = dropArea.querySelector(`div[name="${name}_fileList"]`);
+
+                                    // Kéo thả vào drop-area
+                                    dropArea.addEventListener('dragover', (e) => {
+                                        e.preventDefault();
+                                        dropArea.classList.add('highlight');
+                                    });
+
+                                    dropArea.addEventListener('dragleave', () => {
+                                        dropArea.classList.remove('highlight');
+                                    });
+
+                                    dropArea.addEventListener('drop', (e) => {
+                                        e.preventDefault();
+                                        dropArea.classList.remove('highlight');
+                                        const files = e.dataTransfer.files;
+                                        if (files.length > 0) {
+                                            handleFiles(files, fileList, `${name}_fileName`);
+                                        } else {
+                                            const draggedFileName = e.dataTransfer.getData('text/plain');
+                                            const draggedItem = document.querySelector(`.file-item[data-name="${draggedFileName}"]`);
+                                            if (draggedItem) {
+                                                const newItem = createFileItem(draggedFileName);
+                                                if (fileList) {
+                                                    fileList.appendChild(newItem);
+                                                }
+                                                
+                                                
+                                                const key = `${name}_fileName`;
+                                                const current = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+                                                if (!current.has(draggedFileName)) {
+                                                    current.add(draggedFileName);
+                                                    localStorage.setItem(key, JSON.stringify(Array.from(current)));
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                });
+
+                                const selectTime = lessonBox.querySelector(`select[name="${name}_makeupTime"]`);
+
+                                // Thêm option từ 1 đến 10
+                                for (let i = 1; i <= (10-lesson.TKB_SoTiet+1); i++) {
+                                    const option = document.createElement('option');
+                                    option.value = i;
+                                    option.textContent = returnTiet(i,lesson.TKB_SoTiet);
+                                    selectTime.appendChild(option);
+                                }
+
+                                const makeupTime = lessonBox.querySelector(`select[name="${name}_makeupTime"]`);
+                                makeupTime.addEventListener('change', function () {
+                                    localStorage.setItem(`${name}_makeupTime`, this.value);
+                                });
+                                const makeupDate = lessonBox.querySelector(`input[name="${name}_makeupDate"]`);
+                                makeupDate.addEventListener('change', function () {
+                                    localStorage.setItem(`${name}_makeupDate`, this.value);
+                                });
+                                const makeupMethodRadios = lessonBox.querySelectorAll(`input[name="${name}_makeupMethod"]`);
+                                makeupMethodRadios.forEach(radio => {
+                                    radio.addEventListener('change', function () {
+                                        localStorage.setItem(`${name}_makeupMethod`, this.value);
+                                    });
+                                });
+
+                                const substituteTeacherSelect = lessonBox.querySelector(`select[name="${name}_substituteTeacher"]`);
+                                substituteTeacherSelect.addEventListener('change', function () {
+                                    localStorage.setItem(`${name}_substituteTeacher`, this.value);
+                                });
+
+                                const allFileNames = [];
+
+                                if(isKeyExist(`${name}_trangthai`)){
+                                    select.value = localStorage.getItem(`${name}_trangthai`);
+                                    select.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng trạng thái
+                                } else {
+                                    localStorage.setItem(`${name}_trangthai`, lesson.TT_Ma);
+                                    select.value = localStorage.getItem(`${name}_trangthai`);
+                                    select.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng trạng thái
+                                }
+
+
+
+                                if(isKeyExist(`${name}_replaceMethod`)){   // Nếu đã có phương thức thay thế trong localStorage
+                                    radios.forEach(radio => {
+                                        if (radio.value === localStorage.getItem(`${name}_replaceMethod`)) {
+                                            radio.checked = true;
+                                            radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                        }
+                                    });
+                                    if(localStorage.getItem(`${name}_replaceMethod`) === 'DayBu') { // Nếu phương thức là Dạy bù
+                                        if(isKeyExist(`${name}_makeupDate`)) { // Nếu đã có ngày dạy bù trong localStorage
+                                            makeupDate.value = localStorage.getItem(`${name}_makeupDate`);
+                                            makeupTime.value = localStorage.getItem(`${name}_makeupTime`);
+                                            makeupMethodRadios.forEach(radio => {
+                                                if (radio.value === localStorage.getItem(`${name}_makeupMethod`)) {
+                                                    radio.checked = true;
+                                                    radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                                }
+                                            });
+                                        } else { // Nếu chưa có ngày dạy bù trong localStorage
+                                            dates.forEach(lessonMakeUp => {
+                                                if(lessonMakeUp.TKB_ID === lesson.TKB_ID_DayBu) {
+                                                    makeupDate.value = lessonMakeUp.TKB_Ngay;
+                                                    localStorage.setItem(`${name}_makeupDate`, lessonMakeUp.TKB_Ngay);
+                                                    makeupTime.value = lessonMakeUp.TKB_TietBD;
+                                                    localStorage.setItem(`${name}_makeupTime`, returnTiet(lessonMakeUp.TKB_TietBD, lessonMakeUp.TKB_SoTiet));
+                                                    makeupMethodRadios.forEach(radio => {
+                                                        if (radio.value === lesson.HTDB_ID) {
+                                                            radio.checked = true;
+                                                            radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                                        }
+                                                    });
+                                                    localStorage.setItem(`${name}_makeupMethod`, lesson.HTDB_ID);
+
+                                                }
+                                            })
+                                        }
+                                    } else if (localStorage.getItem(`${name}_replaceMethod`) === 'DayThay') { // Nếu phương thức là Dạy thay
+                                        if(isKeyExist(`${name}_substituteTeacher`)) { // Nếu đã có giáo viên thay thế trong localStorage
+                                            substituteTeacherSelect.value = localStorage.getItem(`${name}_substituteTeacher`);
+                                        } else { // Nếu chưa có giáo viên thay thế trong localStorage
+                                            substituteTeacherSelect.value = lesson.GV_DayThay;
+                                            localStorage.setItem(`${name}_substituteTeacher`, lesson.GV_DayThay);
+                                        }
+                                    } else if (localStorage.getItem(`${name}_replaceMethod`) === 'NghiMC') { // Nếu phương thức là Nghỉ có minh chứng
+                                        if(isKeyExist(`${name}_fileName`)) { // Nếu đã có file minh chứng trong localStorage
+                                            const fileNames = JSON.parse(localStorage.getItem(`${name}_fileName`));
+                                            fileNames.forEach(fileName => {
+                                                const newItem = createFileItem(fileName);
+                                                lessonBox.querySelector('.file-list').appendChild(newItem);
+                                            });
+                                        } else { // Nếu chưa có file minh chứng trong localStorage
+                                            dates.forEach(lessonFile => {
+                                                if (lessonFile.TKB_ID === lesson.TKB_ID) {
+                                                    if(lessonFile.VBMC_File === null) return; // Bỏ qua nếu không có file minh chứng
+                                                    const fileName = lessonFile.VBMC_File.substring(8);
+
+                                                    const newItem = createFileItem(fileName);
+                                                    lessonBox.querySelector('.file-list').appendChild(newItem);
+
+                                                    allFileNames.push(fileName);
+                                                }
+                                            });
+
+                                            if(allFileNames.length > 0) // Chỉ lưu nếu có file
+                                                localStorage.setItem(`${name}_fileName`, JSON.stringify(allFileNames));
+                                        }
+                                    }
+                                } else { // Nếu chưa có phương thức thay thế trong localStorage
+                                    if(lesson.TT_Ma === 'TT002'){
+                                        if(lesson.LDB_ID !== null)
+                                            localStorage.setItem(`${name}_replaceMethod`, 'DayBu');
+                                        else if(lesson.GV_DayThay !== null)
+                                            localStorage.setItem(`${name}_replaceMethod`, 'DayThay');
+                                        else
+                                            localStorage.setItem(`${name}_replaceMethod`, 'NghiMC');
+                                        radios.forEach(radio => {
+                                            if (radio.value === localStorage.getItem(`${name}_replaceMethod`)) {
+                                                radio.checked = true;
+                                                radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                            }
+                                        });
+                                        if(localStorage.getItem(`${name}_replaceMethod`) === 'DayBu') { // Nếu phương thức là Dạy bù
+                                            if(isKeyExist(`${name}_makeupDate`)) { // Nếu đã có ngày dạy bù trong localStorage
+                                                makeupDate.value = localStorage.getItem(`${name}_makeupDate`);
+                                                makeupTime.value = localStorage.getItem(`${name}_makeupTime`);
+                                                makeupMethodRadios.forEach(radio => {
+                                                    if (radio.value === localStorage.getItem(`${name}_makeupMethod`)) {
+                                                        radio.checked = true;
+                                                        radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                                    }
+                                                });
+                                            } else { // Nếu chưa có ngày dạy bù trong localStorage
+                                                dates.forEach(lessonMakeUp => {
+                                                    if(lessonMakeUp.TKB_ID === lesson.TKB_ID_DayBu) {
+                                                        makeupDate.value = lessonMakeUp.TKB_Ngay;
+                                                        localStorage.setItem(`${name}_makeupDate`, lessonMakeUp.TKB_Ngay);
+                                                        makeupTime.value = lessonMakeUp.TKB_TietBD;
+                                                        localStorage.setItem(`${name}_makeupTime`, lessonMakeUp.TKB_TietBD);
+                                                        makeupMethodRadios.forEach(radio => {
+                                                            if (radio.value === lesson.HTDB_ID) {
+                                                                radio.checked = true;
+                                                                radio.dispatchEvent(new Event('change')); // Gọi sự kiện change để hiển thị đúng phương thức
+                                                            }
+                                                        });
+                                                        localStorage.setItem(`${name}_makeupMethod`, lesson.HTDB_ID);
+
+                                                    }
+                                                })
+                                            }
+                                        } else if (localStorage.getItem(`${name}_replaceMethod`) === 'DayThay') { // Nếu phương thức là Dạy thay
+                                            if(isKeyExist(`${name}_substituteTeacher`)) { // Nếu đã có giáo viên thay thế trong localStorage
+                                                substituteTeacherSelect.value = localStorage.getItem(`${name}_substituteTeacher`);
+                                            } else { // Nếu chưa có giáo viên thay thế trong localStorage
+                                                substituteTeacherSelect.value = lesson.GV_DayThay;
+                                                localStorage.setItem(`${name}_substituteTeacher`, lesson.GV_DayThay);
+                                            }
+                                        } else if (localStorage.getItem(`${name}_replaceMethod`) === 'NghiMC') { // Nếu phương thức là Nghỉ có minh chứng
+                                            if(isKeyExist(`${name}_fileName`)) { // Nếu đã có file minh chứng trong localStorage
+                                                const fileNames = JSON.parse(localStorage.getItem(`${name}_fileName`));
+                                                fileNames.forEach(fileName => {
+                                                    const newItem = createFileItem(fileName);
+                                                    lessonBox.querySelector('.file-list').appendChild(newItem);
+                                                });
+                                            } else { // Nếu chưa có file minh chứng trong localStorage
+                                                dates.forEach(lessonFile => {
+                                                    if (lessonFile.TKB_ID === lesson.TKB_ID) {
+                                                        if(lessonFile.VBMC_File === null) return; // Bỏ qua nếu không có file minh chứng
+                                                        const fileName = lessonFile.VBMC_File.substring(8);
+
+                                                        const newItem = createFileItem(fileName);
+                                                        lessonBox.querySelector('.file-list').appendChild(newItem);
+
+                                                        allFileNames.push(fileName);
+                                                    }
+                                                });
+                                                if(allFileNames.length > 0) // Chỉ lưu nếu có file
+                                                    localStorage.setItem(`${name}_fileName`, JSON.stringify(allFileNames));
+                                            }
+                                        }
+                                    }
+                                }
+
+                                
+                            }
+                        });
                         
                     });
                     buttonContainer.appendChild(button);
@@ -69,31 +446,176 @@
         });
 
         function toggleDayButton(button) {
-            const isActive = button.classList.contains('active');
-            button.classList.toggle('active', !isActive);
-            button.style.backgroundColor = isActive ? '' : 'orange';
-            button.style.color = isActive ? '' : 'white';
+            // Bỏ active và reset style tất cả các nút
+            const allButtons = document.querySelectorAll('.date-button');
+            allButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Gán active cho nút được bấm
+            button.classList.add('active');
         }
 
-        function onStatusChange(select, idx) {
-            const extra = document.getElementById('extraFields' + idx);
-            const value = select.value;
-            extra.innerHTML = '';
+        function returnTiet(tietBD, soTiet){
+            let tiet = tietBD.toString();
+            for (let i = 1; i < soTiet; i++) {
+                if(parseInt(tietBD) + i==10)
+                    tiet += `0`;
+                else
+                    tiet += `${parseInt(tietBD) + i}`;
+            }
+            return tiet;
+        }
 
-            if (value === 'nghi') {
-                extra.innerHTML = 'Đính kèm: <input type="file" name="file"><br>';
-            } else if (value === 'daythay') {
-                extra.innerHTML = 'Giáo viên: <input type="text" name="substitute"><br>';
-            } else if (value === 'daybu') {
-                extra.innerHTML = `
-                Ngày: <input type="date" name="makeupDate"><br>
-                Giờ bắt đầu: <input type="time" name="startTime"><br>
-                Hình thức:
-                <label><input type="radio" name="mode" value="offline" checked> Offline</label>
-                <label><input type="radio" name="mode" value="online"> Online</label><br>
-                `;
+        function dayOfWeek(dateString) {
+            const date = new Date(dateString);
+            const days = ['CN', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy'];
+            return days[date.getDay()];
+        }
+
+        function formateDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+            return date.toLocaleDateString('vi-VN', options);
+        }
+
+        function isKeyExist(key) {
+            return localStorage.getItem(key) !== null;
+        }
+
+        
+
+        // Xử lý nút chọn file độc lập
+        const externalFileInput = document.getElementById('externalFileInput');
+        const externalFileList = document.getElementById('externalFileList');
+
+        externalFileInput.addEventListener('change', (e) => {
+            Array.from(e.target.files).forEach(file => {
+                createDraggableFileItem(file.name, externalFileList); // hiển thị file kéo thả
+            });
+
+            saveFilesToLocalStorage(e.target.files, 'external'); // chỉ lưu tên file
+            externalFileInput.value = ''; // reset input
+        });
+
+        const pendingFiles = new Map();
+        function saveFilesToLocalStorage(files, name) {
+            const currentFiles = new Set(JSON.parse(localStorage.getItem(`${name}_fileName`) || '[]'));
+            if (!pendingFiles.has(name)) pendingFiles.set(name, []);
+            Array.from(files).forEach(file => {
+                if (!currentFiles.has(file.name)) {
+                currentFiles.add(file.name);
+                pendingFiles.get(name).push(file); // Lưu file thực
+        }
+            });
+
+            localStorage.setItem(`${name}_fileName`, JSON.stringify(Array.from(currentFiles)));
+        }
+
+
+        // Xử lý danh sách file
+
+
+        function handleFiles(files, fileList, name) {
+            const currentFiles = new Set(JSON.parse(localStorage.getItem(name) || '[]'));
+
+
+            Array.from(files).forEach(file => {
+                if (currentFiles.has(file.name)) return;
+
+                // Kiểm tra xem đã tồn tại trong DOM chưa
+                const alreadyExists = Array.from(fileList.children)
+                    .some(item => item.dataset.name === file.name);
+
+                if (!alreadyExists) {
+                    const fileItem = createFileItem(file.name);
+                    fileList.appendChild(fileItem);
+                    currentFiles.add(file.name); // ✅ Chỉ thêm vào nếu đã render
+                }
+            });
+
+            localStorage.setItem(name, JSON.stringify(Array.from(currentFiles)));
+        }
+
+
+
+
+        // Tạo div chứa tên file (không kéo thả, dùng trong drop-area)
+        function createFileItem(fileName) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.textContent = fileName;
+            fileItem.dataset.name = fileName;
+            return fileItem;
+        }
+
+        // Tạo div chứa tên file có thể kéo thả (dùng cho externalFileList)
+        function createDraggableFileItem(fileName, fileList) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.textContent = fileName;
+            fileItem.dataset.name = fileName;
+            fileItem.draggable = true;
+
+            fileItem.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', fileName);
+                fileItem.classList.add('dragging');
+            });
+
+            fileItem.addEventListener('dragend', () => {
+                fileItem.classList.remove('dragging');
+            });
+
+            fileList.appendChild(fileItem);
+        }
+
+        async function handleSaveAll() {
+            try {
+                const localStorageData = {};
+
+                // Duyệt qua toàn bộ localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+
+                    // Nếu value là JSON hợp lệ, parse luôn
+                    try {
+                        localStorageData[key] = JSON.parse(value);
+                    } catch (e) {
+                        localStorageData[key] = value;
+                    }
+                }
+
+                // Gửi dữ liệu lên server
+                const response = await axios.post('/save-leave-data', localStorageData);
+
+
+                if (pendingFiles.size > 0) {
+                    const formData = new FormData();
+
+                    for (const [inputName, fileArray] of pendingFiles.entries()) {
+                        fileArray.forEach(file => {
+                            formData.append(`${inputName}[]`, file);
+                        });
+                    }
+
+                    const fileRes = await axios.post('/upload-files', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
+                    console.log('Upload response:', fileRes.data);
+                }
+
+                // Thông báo thành công
+                alert('Lưu thành công!');
+                console.log('Server response:', response.data);
+            } catch (error) {
+                console.error('Lỗi khi gửi dữ liệu:', error);
+                alert('Lỗi khi lưu dữ liệu!');
             }
         }
+
+        
     </script>
 </body>
 </html>

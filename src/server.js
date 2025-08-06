@@ -21,6 +21,7 @@ app.use(sessionMiddleware);
 app.use(getTodayMiddleware);
 
 
+
 // khai báo đường dẫn
 app.use('/',webRoutes);
 
