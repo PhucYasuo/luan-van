@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân quyền</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <%- include('navbar') %>
+
+    <div class="phanquyen-container">
+        <!-- Cột trái: Chọn tổ bộ môn & giáo viên -->
+        <div class="account-select-box">
+            <h3>Chọn giáo viên</h3>
+            <label for="select-tbm">Tổ bộ môn:</label>
+            <select id="select-tbm">
+                <option value="">-- Chọn tổ bộ môn --</option>
+                <% tobomons.forEach(tbm => { %>
+                    <option value="<%= tbm.TBM_Ma %>"><%= tbm.TBM_Ten %></option>
+                <% }) %>
+            </select>
+
+            <label for="select-gv">Giáo viên:</label>
+            <select id="select-gv" disabled>
+                <option value="">-- Chọn giáo viên --</option>
+            </select>
+        </div>
+
+        <!-- Cột giữa: Vai trò -->
+        <div id="roles-col" class="roles-col"></div>
+
+        <!-- Cột phải: Quyền -->
+        <div id="permissions-col" class="permissions-col"></div>
+
+        <!-- SVG dây nối -->
+        <svg id="lines" class="svg-lines"></svg>
+    </div>
+
+    <script>
+        localStorage.clear(); // Xoá localStorage khi vào trang
+        const allPermissions = <%- JSON.stringify(allPermissions || {}) %>;
+        const allPermissionsInfo = <%- JSON.stringify(allPermissionsInfo || {}) %>;
+        const allRolesInfo = <%- JSON.stringify(allRolesInfo || []) %>;
+        const lsKey = "phan-quyen";
+
+        const selectTBM = document.getElementById('select-tbm');
+        const selectGV = document.getElementById('select-gv');
+        const rolesCol = document.getElementById('roles-col');
+        const permsCol = document.getElementById('permissions-col');
+        const svg = document.getElementById('lines');
+
+        let saved = {};
+        const container = document.createElement('div');
+        // Chọn tổ bộ môn → lấy danh sách GV
+        selectTBM.addEventListener('change', async () => {
+            const tbmMa = selectTBM.value;
+            selectGV.innerHTML = '<option value="">-- Chọn giáo viên --</option>';
+            selectGV.disabled = true;
+            container.innerHTML = ''; // Xoá nội dung cũ
+
+            if (tbmMa) {
+                try {
+                    const res = await axios.get('/giao-viens', {
+                        params: { tbmMa: tbmMa }
+                    });
+
+                    const giaoviens = res.data;
+                    giaoviens.forEach(gv => {
+                        const opt = document.createElement('option');
+                        opt.value = gv.GV_Ma;
+                        opt.textContent = gv.GV_HoTen;
+                        selectGV.appendChild(opt);
+                    });
+                    selectGV.disabled = false;
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        });
+
+        // Chọn giáo viên → lấy danh sách quyền & vai trò
+        selectGV.addEventListener('change', async () => {
+            const gvMa = selectGV.value;
+            if (!gvMa) return;
+
+            try {
+                const res = await axios.get(`/permission-by-id`, {
+                    params: { gvMa: gvMa }
+                });
+                const permissions = res.data; // { VT001: [ 'Q0001' ], ... }
+                // Clear localStorage
+                localStorage.removeItem(lsKey);
+                saved = {};
+
+                // Lưu permissions vào localStorage theo quy tắc
+                for (const vt in permissions) {
+                    saved[vt] = true;
+                    permissions[vt].forEach(q => {
+                        saved[`${vt}_${q}`] = true;
+                    });
+                }
+                localStorage.setItem(lsKey, JSON.stringify(saved));
+
+                // Render lại vai trò + quyền
+                renderPermissions();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+        
+        function renderPermissions() {
+            container.innerHTML = ''; // Xoá nội dung cũ
+            rolesCol.innerHTML = '';
+            permsCol.innerHTML = '';
+            svg.innerHTML = '';
+            saved = JSON.parse(localStorage.getItem(lsKey) || "{}");
+
+            // Container chính: xếp nhóm theo cột
+            
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+            container.style.gap = '20px';
+            container.style.width = '100%';
+
+            for (const vt in allPermissions) {
+                // Nhóm: role bên trái, perm bên phải
+                const group = document.createElement('div');
+                group.className = 'role-perm-group';
+                group.style.display = 'flex';
+                group.style.alignItems = 'stretch'; // role cao bằng perm-stack
+                group.style.gap = '20px';
+
+                // Role
+                const roleDiv = document.createElement('div');
+                roleDiv.className = 'role-box';
+                roleDiv.dataset.key = vt;
+                roleDiv.textContent = allRolesInfo.find(r => r.VT_Ma === vt)?.VT_Ten || vt;
+                updateBoxStyle(roleDiv, saved[vt]);
+                roleDiv.addEventListener('click', () => toggleKey(vt));
+
+                // Các perm xếp dọc
+                const permStack = document.createElement('div');
+                permStack.className = 'perms-stack';
+                permStack.style.display = 'flex';
+                permStack.style.flexDirection = 'column';
+                permStack.style.gap = '10px';
+
+                allPermissions[vt].forEach(q => {
+                    const permDiv = document.createElement('div');
+                    permDiv.className = 'perm-box';
+                    permDiv.dataset.key = `${vt}_${q}`;
+                    permDiv.textContent = allPermissionsInfo.find(p => p.Q_Ma === q)?.Q_Ten || q;
+                    updateBoxStyle(permDiv, saved[`${vt}_${q}`]);
+                    permDiv.addEventListener('click', () => toggleKey(`${vt}_${q}`));
+                    permStack.appendChild(permDiv);
+                });
+
+                group.appendChild(roleDiv);
+                group.appendChild(permStack);
+                container.appendChild(group);
+            }
+
+            // Ẩn cột cũ
+            rolesCol.style.display = 'none';
+            permsCol.style.display = 'none';
+
+            // Thêm container mới
+            rolesCol.parentElement.appendChild(container);
+
+            drawLines();
+        }
+
+
+
+
+        function updateBoxStyle(div, active) {
+            div.classList.toggle('active-border', !!active);
+        }
+
+        function toggleKey(key) {
+            saved[key] = !saved[key];
+            localStorage.setItem(lsKey, JSON.stringify(saved));
+            document.querySelectorAll(`[data-key="${key}"]`).forEach(el => {
+                updateBoxStyle(el, saved[key]);
+            });
+            console.log(localStorage);
+        }
+
+        function drawLines() {
+            svg.innerHTML = '';
+            for (const vt in allPermissions) {
+                const roleDiv = document.querySelector(`.role-box[data-key="${vt}"]`);
+                allPermissions[vt].forEach(q => {
+                    const permDiv = document.querySelector(`.perm-box[data-key="${vt}_${q}"]`);
+                    if (roleDiv && permDiv) {
+                        const roleRect = roleDiv.getBoundingClientRect();
+                        const permRect = permDiv.getBoundingClientRect();
+                        const containerRect = svg.getBoundingClientRect();
+
+                        const x1 = roleRect.right - containerRect.left;
+                        const y1 = roleRect.top + roleRect.height / 2 - containerRect.top;
+                        const x2 = permRect.left - containerRect.left;
+                        const y2 = permRect.top + permRect.height / 2 - containerRect.top;
+
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute("x1", x1);
+                        line.setAttribute("y1", y1);
+                        line.setAttribute("x2", x2);
+                        line.setAttribute("y2", y2);
+                        line.setAttribute("stroke", "black");
+                        line.setAttribute("stroke-width", "2");
+                        svg.appendChild(line);
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('resize', drawLines);
+    </script>
+
+</body>
+</html>

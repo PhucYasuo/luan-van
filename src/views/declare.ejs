@@ -1,208 +1,361 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Kê khai số tiết dạy học</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xem kê khai</title>
     <link rel="stylesheet" href="/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+    /* Giữ nguyên màu & kích thước box */
+    .box {
+
+        flex: 1;
+    }
+    .top {
+        /* background-color: #fbbc05; */
+        flex: 1;
+        display: flex;         /* để chia không gian cho 3 div con */
+        flex-direction: row;   /* ngang, đổi thành column nếu muốn dọc */
+        gap: 10px;              /* khoảng cách giữa các div con */
+        padding: 5px;
+        flex : 0.3;
+    }
+    .bot {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        padding: 5px;
+    }
+    .sub-box {
+        flex: 1;                /* mỗi div con chiếm đều nhau */
+        background-color: #fff;
+        /* border: 1px solid #ccc; */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .sub-box-1{
+        flex: 1.3;
+    }
+    .sub-box-4 {
+        flex: 4.2;
+    }
+    .sub-box-5 {
+        flex: 0.8;
+    }
+    .box-1 {
+        flex: 2;
+        display: flex;
+        flex-direction: row;
+        /* background-color: aqua; */
+    }
+    .box-2 {
+        /* background-color: #34a853; */
+        flex: 1.2;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .box-3 {
+        /* background-color: #ea4335; */
+        flex: 0.3;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding-right: 30px;
+    }
+
+    .sub-box-6 {
+        flex: 1;
+
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+    }
+    .sub-box-7 {
+        flex: 1;
+    }
+
+    .sub-box-8 {
+        flex: 1;
+        /* background-color: #22b87c; */
+        /* border: 1px solid #ccc; */
+    }
+
+    .sub-box-9 {
+        flex: 1;
+        /* background-color: #98208a; */
+
+        /* border: 1px solid #ccc; */
+    }
+
+</style>
 </head>
 <body>
+
+    <!-- Hàng 1 -->
     <%- include('navbar') %>
-    <div class="container">
-        <h1>Thống kê số tiết dạy học</h1>
-        
-        <table border="0" class="selection-table">
-            <tr>
-                <td><label for="namHocSelect">Năm học:</label></td>
-                <td><select id="namHocSelect"><option value="" >-- Chọn năm học --</option></select></td>
-                <td><label for="thangSelect">Tháng:</label></td>
-                <td><select id="thangSelect" disabled><option value="" >-- Chọn tháng --</option></select></td>
-            </tr>
-            <tr id="tuan" hidden>
-                <td colspan="4">
-                    Từ tuần: <input id="firstWeek" type="text" size="2" disabled/>
-                    Đến tuần: <input id="lastWeek" type="text" size="2" disabled/>
-                    Số tuần: <input id="weeks" type="text" size="2" disabled/>
-                </td>
-            </tr>
-        </table>
 
-        <div id="time-table" class="data-section" hidden>
-            <h3>Số tiết được phân công</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Lớp</th>
-                        <th>Môn</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="time-table-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="time-table-sum-all"></td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Hàng 2: 2 cột -->
+    <div class="container declare-layout">
+        <!-- Cột trái -->
+        <div class="declare-left">
+            <div class="box top">
+                <div class="sub-box selection sub-box-1">
+                    <div class="labels-col">
+                        <div class="label-wrapper">
+                            <label for="namHocSelect" class="declare-select">Năm học:</label>
+                        </div>
+                        <div class="label-wrapper">
+                            <label for="thangSelect">Tháng:</label>
+                        </div>
+                    </div>
+                    
+                    <div class="selects-col">
+                        <select id="namHocSelect">
+                            <option value="">-- Chọn năm học --</option>
+                        </select>
+                        <select id="thangSelect" disabled>
+                            <option value="">-- Chọn tháng --</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="sub-box sub-box-2">
+                    <div class="labels-col-2">
+                        <div class="label-wrapper">
+                            <label for="tuanBatDau">Tuần bắt đầu:</label>
+                        </div>
+                        <div class="label-wrapper">
+                            <label for="tuanKetThuc">Tuần kết thúc:</label>
+                        </div>
+                        <div class="label-wrapper">
+                            <label for="soTuan">Số tuần:</label>
+                        </div>
+                    </div>
+                    <div class="inputs-col-2">
+                        <div class="input-wrapper">
+                            <input type="number" id="firstWeek" min="1" max="52"  disabled>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="number" id="lastWeek" min="1" max="52" disabled>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="number" id="weeks" min="1" max="52" disabled>
+                        </div>
+                        
+                        
+                    </div>
+                    
+                </div>
+                <div class="sub-box sub-box-3">
+                    <div class="counter-title">Chọn tuần</div>
+                    <div class="counter-box">
+                        <button id="prevBtn" class="arrow-btn">&#9664;</button>
+                        <span id="counterValue"></span>
+                        <button id="nextBtn" class="arrow-btn">&#9654;</button>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="box bot">
+                <div class="sub-box sub-box-4">
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th>Buổi</th>
+                                <th>Tiết</th>
+                                <th>Thứ 2</th>
+                                <th>Thứ 3</th>
+                                <th>Thứ 4</th>
+                                <th>Thứ 5</th>
+                                <th>Thứ 6</th>
+                                <th>Thứ 7</th>
+                                <th>CN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sáng -->
+                            <tr>
+                                <td rowspan="5">Sáng</td>
+                                <td>1</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <!-- Chiều -->
+                            <tr>
+                                <td rowspan="5">Chiều</td>
+                                <td>6</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="sub-box sub-box-5">
+                    <div class="legend">
+                        <span class="legend-color blue"></span><span>Dạy</span>
+                        <span class="legend-color red"></span><span>Nghỉ cá nhân</span>
+                        <span class="legend-color yellow"></span><span>Nghỉ do quyết định</span>
+                        <span class="legend-color green"></span><span>Dạy thay</span>
+                        <span class="legend-color orange"></span><span>Dạy bù</span>
+                      </div>
+                </div>
+
+
+            </div>
+            
+            
         </div>
 
-        <div id="approved-leave" class="data-section" hidden>
-            <h3>Số tiết nghỉ phép có quyết định</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Lớp</th>
-                        <th>Môn</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="approved-leave-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="approved-leave-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <!-- Cột phải -->
+        <div class="declare-right">
+            <div class="box-1">
+                <div class="sub-box-6">
+                    <table id="declare-week-table" class="declare-week-table">
+                        <tr>
+                          <th colspan="2">Kê khai giảng dạy tuần</th>
+                        </tr>
+                        <tr>
+                            <td>Được phân công (1)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nghỉ cá nhân (2)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nghỉ có quyết định (3)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy thay (4)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy bù (5)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Thực dạy<br>= (1)-(2)-(3)+(4)+(5)</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                      
+                    
+                </div>
 
-        <div id="personel-absence" class="data-section" hidden>
-            <h3>Số tiết nghỉ việc riêng</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Lớp</th>
-                        <th>Môn</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="personel-absence-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="personel-absence-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div id="make-up" class="data-section" hidden>
-            <h3>Số tiết dạy bù</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Lớp</th>
-                        <th>Môn</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="make-up-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="make-up-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div id="substitute" class="data-section" hidden>
-            <h3>Số tiết dạy thay</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Lớp</th>
-                        <th>Môn</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="substitute-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="substitute-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        
-        <div id="position" class="data-section" hidden>
-            <h3>Số tiết miễn giảm chức vụ</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Chức vụ</th>
-                        <th>Học kỳ</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="position-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="position-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div id="mission" class="data-section" hidden>
-            <h3>Số tiết miễn giảm chức vụ</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Chức vụ</th>
-                        <th>Học kỳ</th>
-                        <th>Số tiết tháng</th>
-                    </tr>
-                </thead>
-                <tbody id="mission-body"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2">Tổng số tiết:</td>
-                        <td id="mission-sum"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div id="sum-all" class="data-section" hidden>
-            <h3>Tổng số tiết dạy học</h3>
-            <table border="1" cellpadding="5" cellspacing="0" class="data-table">
-                <thead>
-                    <tr>
-                        <th>Nội dung</th>
-                        <th>Số tiết</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Định mức tiết dạy</td>
-                        <td id="assign"></td>
-                    </tr>
-                    <tr>
-                        <td>Tổng số tiết được phân công</td>
-                        <td id="time-table-sum"></td>
-                    </tr>
-                    <tr>
-                        <td>Tổng số tiết thực dạy</td>
-                        <td id="true-teach-sum"></td>
-                    </tr>
-                    <tr>
-                        <td>Tổng số tiết thực hiện</td>
-                        <td id="true-work-sum"></td>
-                    </tr>
-                    <tr>
-                        <td>Tổng số tiết dư giờ</td>
-                        <td id="extra-time-sum"></td>
-                    </tr>
-                </tbody>
-            </table>
+                <div class="sub-box-7">
+                    <table id="declare-month-table" class="declare-week-table">
+                        <tr>
+                            <th colspan="2">Kê khai giảng dạy tháng</th>
+                        </tr>
+                        <tr>
+                            <td>Được phân công (6)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nghỉ cá nhân (7)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nghỉ có quyết định (8)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy thay (9)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Dạy bù (10)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Thực dạy<br>= (6)-(7)-(8)+(9)+(10)</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="box-2">
+                <div class="sub-box-8">
+                    <table id="decrease-table" class="declare-week-table">
+                        <tr>
+                            <th colspan="3">Kê khai miễn giảm tiết dạy</th>
+                        </tr>
+                    </table>
+                </div>
+                <div class="sub-box-9">
+                    <table id="total-table" class="declare-week-table">
+                        <tr>
+                            <th colspan="2">Tổng số tiết dạy</th>
+                        </tr>
+                        <tr>
+                            <td>Định mức (11)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Thực dạy (12)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Miễn giảm (13)</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Số tiết dư giờ<br>= (12)-(11)+(13)</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="box-3">
+                <button onclick="exportWord()">Tải kê khai</button>
+            </div>
         </div>
     </div>
-
-    
     <script>
         async function fetchNamHocs() {
             try {
@@ -274,13 +427,27 @@
             }
         });
 
-        const tuanRow = document.getElementById('tuan');
         const firstWeekInput = document.getElementById('firstWeek');
         const lastWeekInput = document.getElementById('lastWeek');
         const weeksInput = document.getElementById('weeks');
+        const counterValue = document.getElementById('counterValue');
+        const declareWeekTable = document.getElementById('declare-week-table');
+        const declareMonthTable = document.getElementById('declare-month-table');
+        const decreaseTable = document.getElementById('decrease-table');
+        const totalTable = document.getElementById('total-table');
+        let timeTable;
+        let weekData = [];
+        let monthData = [];
+        let detailTimeTable;
+        let detailApprovedLeave;
+        let detailPersonelAbsence;
+        let detailMakeUp;
+        let detailSubstitute;
+        let detailPosition;
+        let detailMission;
+        let week;
 
         thangSelect.addEventListener('change', async () => {
-            tuanRow.hidden = !thangSelect.value;
 
             if (!thangSelect.value) return;
 
@@ -297,145 +464,500 @@
                     weeks, firstDay, lastDay,
                     firstWeekNumber, lastWeekNumber,
                     timeTableData,
+                    timeTableWeekData,
+                    detailTimeTableData,
+                    onTeachData,
+                    onTeachWeekData,
                     approvedLeaveData,
+                    approvedLeaveWeekData,
+                    detailApprovedLeaveData,
                     personelAbsenceData,
+                    personelAbsenceWeekData,
+                    detailPersonelAbsenceData,
                     makeUpData,
+                    makeUpWeekData,
+                    detailMakeUpData,
                     substituteData,
+                    substituteWeekData,
+                    detailSubstituteData,
                     positions, missions
                 } = response.data;
 
-                firstWeekInput.value = firstWeekNumber;
-                lastWeekInput.value = lastWeekNumber;
+                detailTimeTable = detailTimeTableData;
+                detailApprovedLeave = detailApprovedLeaveData;
+                detailPersonelAbsence = detailPersonelAbsenceData;
+                detailMakeUp = detailMakeUpData;
+                detailSubstitute = detailSubstituteData;
+                detailPosition = positions;
+                detailMission = missions;
+                week = weeks;
+
+                weekData.length = 0; // Xoá dữ liệu cũ trong weekData
+                weekData.push(timeTableWeekData);
+                weekData.push(onTeachWeekData);
+                weekData.push(personelAbsenceWeekData);
+                weekData.push(approvedLeaveWeekData);
+                weekData.push(substituteWeekData);
+                weekData.push(makeUpWeekData);
+
+                monthData.length = 0; // Xoá dữ liệu cũ trong monthData
+                monthData.push(timeTableData);
+                monthData.push(onTeachData);
+                monthData.push(personelAbsenceData);
+                monthData.push(approvedLeaveData);
+                monthData.push(substituteData);
+                monthData.push(makeUpData);
+                changeMonthData(monthData, month, year);
+
+
+
+                // Cập nhật bảng kê khai giảm tiết
+                fillDecreaseTable(positions, missions, weeks);
+                
+                
+                
+
+                firstWeekInput.value = parseInt(firstWeekNumber, 10);
+                lastWeekInput.value = parseInt(lastWeekNumber, 10);
                 weeksInput.value = weeks;
 
-                const sections = [
-                    {
-                        id: 'time-table',
-                        body: 'time-table-body',
-                        sum: 'time-table-sum',
-                        data: timeTableData,
-                        total: timeTableData.reduce((sum, item) => sum + parseInt(item.SoTiet), 0)
-                    },
-                    {
-                        id: 'approved-leave',
-                        body: 'approved-leave-body',
-                        sum: 'approved-leave-sum',
-                        data: approvedLeaveData,
-                        total: approvedLeaveData.reduce((sum, item) => sum + parseInt(item.SoTiet), 0)
-                    },
-                    {
-                        id: 'personel-absence',
-                        body: 'personel-absence-body',
-                        sum: 'personel-absence-sum',
-                        data: personelAbsenceData,
-                        total: personelAbsenceData.reduce((sum, item) => sum + parseInt(item.SoTiet), 0)
-                    },
-                    {
-                        id: 'make-up',
-                        body: 'make-up-body',
-                        sum: 'make-up-sum',
-                        data: makeUpData,
-                        total: makeUpData.reduce((sum, item) => sum + parseInt(item.SoTiet), 0)
-                    },
-                    {
-                        id: 'substitute',
-                        body: 'substitute-body',
-                        sum: 'substitute-sum',
-                        data: substituteData,
-                        total: substituteData.reduce((sum, item) => sum + parseInt(item.SoTiet), 0)
-                    }
-                ];
+                
 
-                sections.forEach(section => {
-                    const container = document.getElementById(section.id);
-                    container.hidden = false;
-                    const body = document.getElementById(section.body);
-                    const sum = document.getElementById(section.sum);
-                    sum.textContent = section.total;
-
-                    body.innerHTML = '';
-
-                    if (section.data && section.data.length > 0) {
-                        section.data.forEach(row => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td>${row.Lop}</td>
-                                <td>${row.TenMon}</td>
-                                <td>${row.SoTiet}</td>
-                            `;
-                            body.appendChild(tr);
-                        });
+                const response2 = await axios.get('/declare-time-table', {
+                    params: {
+                        firstDay: firstDay,
+                        lastDay: lastDay,
+                        namHoc: namHocSelect.value
                     }
                 });
 
-                const sections2 = [
-                    {
-                        id: 'position',
-                        body: 'position-body',
-                        sum: 'position-sum',
-                        data: positions,
-                        total: positions.reduce((sum, item) => sum + parseInt(item.SoTietMien), 0)
-                    },
-                    {
-                        id: 'mission',
-                        body: 'mission-body',
-                        sum: 'mission-sum',
-                        data: missions,
-                        total: missions.reduce((sum, item) => sum + parseInt(item.SoTietMien), 0)
-                    }
-                ];
+                timeTable = response2.data;
 
-                sections2.forEach(section => {
-                    const container = document.getElementById(section.id);
-                    container.hidden = false;
-                    const body = document.getElementById(section.body);
-                    const sum = document.getElementById(section.sum);
-                    sum.textContent = section.total;
+                
+                counterValue.textContent = firstWeekInput.value;
+                
 
-                    body.innerHTML = '';
+                let counter = parseInt(firstWeekInput.value, 10);
+                changeWeekData(counter, parseInt(firstWeekInput.value, 10), weekData);
+                setTimeTable(counter, timeTable);
+                fillTotalTable(weeks);
 
-                    if (section.data && section.data.length > 0) {
-                        section.data.forEach(row => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `
-                                <td>${row.Ten}</td>
-                                <td>${row.HocKy}</td>
-                                <td>${row.SoTietMien}</td>
-                            `;
-                            body.appendChild(tr);
-                        });
-                    }
-                });
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu thống kê:", error);
                 alert("Không thể tải dữ liệu. Vui lòng thử lại.");
             }
-
-            const assign = document.getElementById('assign');
-            assign.textContent = weeksInput.value*17;
-            const timeTableSum = document.getElementById('time-table-sum').textContent;
-            const approvedLeaveSum = document.getElementById('approved-leave-sum').textContent;
-            const personelAbsenceSum = document.getElementById('personel-absence-sum').textContent;
-            const makeUpSum = document.getElementById('make-up-sum').textContent;
-            const substituteSum = document.getElementById('substitute-sum').textContent;
-            const positionSum = document.getElementById('position-sum').textContent;
-            const missionSum = document.getElementById('mission-sum').textContent;
-
-            const timeTableSumAll = document.getElementById('time-table-sum-all');
-            const trueTeachSum = document.getElementById('true-teach-sum');
-            const trueWorkSum = document.getElementById('true-work-sum');
-            const extraTimeSum = document.getElementById('extra-time-sum');
-
-            timeTableSumAll.textContent = parseInt(timeTableSum);
-            trueTeachSum.textContent = parseInt(timeTableSum) - parseInt(approvedLeaveSum) - parseInt(personelAbsenceSum) + parseInt(makeUpSum) + parseInt(substituteSum);
-            trueWorkSum.textContent = parseInt(trueTeachSum.textContent) + parseInt(positionSum) + parseInt(missionSum);
-            extraTimeSum.textContent = parseInt(trueWorkSum.textContent) - parseInt(assign.textContent);
-
-            const sumAllSection = document.getElementById('sum-all');
-            sumAllSection.hidden = false;
-
-
         });
+
+        document.getElementById('prevBtn').addEventListener('click', async () => {
+            
+            if( parseInt(counterValue.textContent) <= firstWeekInput.value) return;
+            const counter = parseInt(counterValue.textContent, 10) - 1;
+            counterValue.textContent = counter;
+            changeWeekData(counter, parseInt(firstWeekInput.value, 10), weekData);
+            setTimeTable(counter, timeTable);
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', async () => {
+            if( parseInt(counterValue.textContent) >= lastWeekInput.value) return;
+            const counter = parseInt(counterValue.textContent, 10) + 1;
+            counterValue.textContent = counter;
+            changeWeekData(counter, parseInt(firstWeekInput.value, 10), weekData);
+            setTimeTable(counter, timeTable);
+        });
+
+        function setTimeTable (counter, response2) {
+            const table = document.querySelector('.timetable');
+            clearAndFlattenRowspans(table); // Reset bảng lịch biểu trước khi cập nhật
+            fillWeek(table, response2, counter); // Điền dữ liệu cho tuần hiện tại
+        }
+
+
+        function clearAndFlattenRowspans(table) {
+            const rows = Array.from(table.rows);
+            const occupied = []; // đánh dấu cột hiển thị bị chiếm bởi rowspan từ hàng trên
+
+            for (let r = 0; r < rows.length; r++) {
+            const row = rows[r];
+
+            // Bỏ qua hàng tiêu đề
+            if (r === 0) {
+                // vẫn cập nhật occupied nếu header có span (hiếm)
+                let v = 0;
+                for (const cell of row.cells) {
+                const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+                for (let i = 1; i < rs; i++) {
+                    occupied[r + i] ??= [];
+                    for (let j = 0; j < cs; j++) occupied[r + i][v + j] = true;
+                }
+                v += cs;
+                }
+                continue;
+            }
+
+            // Hàm phụ: tìm chỉ số DOM cần chèn để đạt tới cột hiển thị targetVCol
+            function domIndexForVCol(targetVCol, targetRow, rowIndex) {
+                let vcol = 0;
+                for (let i = 0; i < targetRow.cells.length; i++) {
+                // bỏ qua các cột đang bị chiếm ở hàng này
+                while (occupied[rowIndex]?.[vcol]) vcol++;
+                const c = targetRow.cells[i];
+                const cs = c.colSpan || 1;
+                if (vcol >= targetVCol) return i;
+                vcol += cs;
+                }
+                return targetRow.cells.length; // chèn cuối nếu lớn hơn
+            }
+
+            let vcol = 0; // chỉ số cột hiển thị cho hàng r
+
+            // Duyệt theo snapshot vì ta sẽ chèn cell mới trong lúc lặp
+            const originalCells = Array.from(row.cells);
+            for (let idx = 0; idx < originalCells.length; idx++) {
+                const cell = originalCells[idx];
+
+                // nhảy qua các cột đang bị che
+                while (occupied[r]?.[vcol]) vcol++;
+
+                const rs = cell.rowSpan || 1;
+                const cs = cell.colSpan || 1;
+
+                // Tác động chỉ từ cột 3 trở đi
+                if (vcol >= 2) {
+                // 1) Xoá nội dung + màu
+                cell.textContent = '';
+                cell.className = '';
+                cell.removeAttribute('style');
+
+                // 2) Làm phẳng rowspan (nếu có)
+                if (rs > 1) {
+                    // chèn ô trống cho từng hàng bên dưới vào đúng vị trí hiển thị
+                    for (let rr = 1; rr < rs; rr++) {
+                    const targetRow = rows[r + rr];
+                    const insertAt = domIndexForVCol(vcol, targetRow, r + rr);
+                    for (let cc = 0; cc < cs; cc++) {
+                        const placeholder = targetRow.insertCell(insertAt + cc);
+                        // trống & không class/style
+                        placeholder.textContent = '';
+                    }
+                    }
+                    cell.rowSpan = 1; // bỏ rowspan
+                }
+                }
+
+                // Ghi nhận vùng chiếm chỗ do rowspan hiện tại (trước khi ta set =1)
+                for (let rr = 1; rr < rs; rr++) {
+                occupied[r + rr] ??= [];
+                for (let cc = 0; cc < cs; cc++) {
+                    occupied[r + rr][vcol + cc] = true;
+                }
+                }
+
+                // tăng cột hiển thị theo colspan
+                vcol += cs;
+            }
+            }
+        }
+
+
+  // 0: Buổi | 1: Tiết | 2..8: Thứ 2..CN
+        function dateToVCol(date) {
+            const d = new Date(date).getDay(); // 0 CN .. 6 T7
+            switch (d) {
+            case 0: return 8; // CN
+            case 1: return 2; // Thứ 2
+            case 2: return 3; // Thứ 3
+            case 3: return 4; // Thứ 4
+            case 4: return 5; // Thứ 5
+            case 5: return 6; // Thứ 6
+            case 6: return 7; // Thứ 7
+            default: return null;
+            }
+        }
+
+    // Dựng lưới occupied cho bảng hiện tại (tính mọi rowspan/colspan đã có, như cột Buổi)
+        function buildOccupied(table) {
+            const occ = [];
+            const rows = Array.from(table.rows);
+            for (let r = 0; r < rows.length; r++) {
+            let vcol = 0;
+                for (const cell of rows[r].cells) {
+                    while (occ[r]?.[vcol]) vcol++;
+                    const rs = cell.rowSpan || 1, cs = cell.colSpan || 1;
+                    for (let rr = 1; rr < rs; rr++) {
+                    occ[r + rr] ??= [];
+                    for (let cc = 0; cc < cs; cc++) occ[r + rr][vcol + cc] = true;
+                    }
+                    vcol += cs;
+                }
+            }
+            return occ;
+        }
+
+    // Tìm cell DOM theo chỉ số cột hiển thị (vcol) ở hàng r, có xét rowspan đang che
+        function getCellByVCol(table, r, vcol, occ) {
+            const row = table.rows[r];
+            let v = 0;
+            for (let i = 0; i < row.cells.length; i++) {
+                while (occ[r]?.[v]) v++;
+                const cell = row.cells[i];
+                const cs = cell.colSpan || 1;
+                if (v === vcol) return { cell, domIndex: i };
+                v += cs;
+            }
+            // Nếu chưa có ô ở vị trí này (hàng bị thiếu vì trên có rowspan), ta chèn ô trống vào đúng vị trí
+            const insertAt = row.cells.length;
+            const placeholder = row.insertCell(insertAt);
+            return { cell: placeholder, domIndex: insertAt };
+        }
+
+    // Đặt bài học có rowspan theo số tiết
+        function applyLesson(table, startRow, vcol, soTiet, painter) {
+            const rows = table.rows;
+            const maxRow = rows.length - 1; // trừ header
+            const span = Math.max(1, Math.min(soTiet | 0, maxRow - startRow + 1));
+            const occ = buildOccupied(table);
+
+            // Lấy ô top của block
+            const { cell: topCell } = getCellByVCol(table, startRow, vcol, occ);
+
+            // Xóa các ô bị che ở các hàng dưới rồi tăng rowspan
+            if (span > 1) {
+                for (let k = 1; k < span; k++) {
+                    const r = startRow + k;
+                    const { domIndex } = getCellByVCol(table, r, vcol, occ);
+                    // xoá ô tại vị trí này (nếu không tồn tại do rowspan phía trên, getCellByVCol đã tạo placeholder)
+                    table.rows[r].deleteCell(domIndex);
+                    // đánh dấu occupied để các lần tìm tiếp theo hiểu là đang bị che
+                    occ[r] ??= [];
+                    occ[r][vcol] = true;
+                }
+            topCell.rowSpan = span;
+            } else {
+                topCell.rowSpan = 1;
+            }
+
+            // Tô dữ liệu/màu cho ô top
+            painter(topCell);
+        }
+
+
+        function paintCell(cell, item) {
+            cell.style.fontSize = '9px';
+            cell.style.color = 'black';
+            cell.textContent = `${item.M_Ten}\n${item.Lop}`;
+            cell.classList.remove('blue','yellow','red','orange','green'); 
+            cell.style.background = '';       // xoá inline background nếu có
+
+            if (item.TT_Ma === 'TT001')      cell.classList.add('blue');
+            else if (item.TT_Ma === 'TT002') cell.classList.add(item.DK_ID ? 'yellow' : 'red');
+            else if (item.TT_Ma === 'TT003') cell.classList.add('orange');
+            else if (item.TT_Ma === 'TT004') cell.classList.add('green');
+        }
+
+    // Hàm fill tuần theo response2 + counter (tuần hiện tại)
+        function fillWeek(table, response2, counter) {
+            response2.forEach(item => {
+                if (parseInt(item.Tuan, 10) !== counter) return;
+
+                const startRow = tietBDToRow(item.TKB_TietBD); // bạn đang có sẵn
+                const vcol = dateToVCol(item.TKB_Ngay);        // cột hiển thị 2..8
+                if (vcol == null) return;
+
+                const soTiet = parseInt(item.TKB_SoTiet, 10) || 1;
+
+                // CHỈ xử lý từ cột 3 trở đi (giữ nguyên Buổi/ Tiết)
+                if (vcol < 2) return;
+
+                applyLesson(
+                    table,
+                    startRow,
+                    vcol,
+                    soTiet,
+                    (cell) => paintCell(cell, item)
+                );
+            });
+        }
+
+        function tietBDToRow (tietBD) {
+            // Chuyển đổi tiết bắt đầu (1-10) thành hàng (1-10)
+            // Giả sử tiết 1 là hàng 1, tiết 2 là hàng 2, ..., tiết 10 là hàng 10
+            return parseInt(tietBD, 10);
+        }
+        
+        function changeWeekData (counter, firstWeek, weekData){
+            declareWeekTable.rows[0].cells[0].textContent = `Kê khai giảng dạy tuần ${counter}`;
+            //Phân công
+            if(weekData[0][counter - firstWeek] && weekData[0][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[1].cells[1].textContent = weekData[0][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[1].cells[1].textContent = 0;
+
+            //Dạy
+            if(weekData[1][counter - firstWeek] && weekData[1][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[2].cells[1].textContent = weekData[1][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[2].cells[1].textContent = 0;
+
+            //Nghỉ cá nhân
+            if(weekData[2][counter - firstWeek] && weekData[2][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[3].cells[1].textContent = weekData[2][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[3].cells[1].textContent = 0;
+
+            //Nghỉ có quyết định
+            if(weekData[3][counter - firstWeek] && weekData[3][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[4].cells[1].textContent = weekData[3][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[4].cells[1].textContent = 0;
+
+            //Dạy thay
+            if(weekData[4][counter - firstWeek] && weekData[4][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[5].cells[1].textContent = weekData[4][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[5].cells[1].textContent = 0;
+
+            //Dạy bù
+            if(weekData[5][counter - firstWeek] && weekData[5][counter - firstWeek].SoTiet)
+                declareWeekTable.rows[6].cells[1].textContent = weekData[5][counter - firstWeek].SoTiet;
+            else
+                declareWeekTable.rows[6].cells[1].textContent = 0;
+
+            //Thực dạy
+            declareWeekTable.rows[7].cells[1].textContent = 
+                parseInt(declareWeekTable.rows[1].cells[1].textContent) - 
+                parseInt(declareWeekTable.rows[3].cells[1].textContent) - 
+                parseInt(declareWeekTable.rows[4].cells[1].textContent) + 
+                parseInt(declareWeekTable.rows[5].cells[1].textContent) +
+                parseInt(declareWeekTable.rows[6].cells[1].textContent);
+        }
+
+        function changeMonthData(monthData, month, year) {
+            declareMonthTable.rows[0].cells[0].textContent = `Kê khai giảng dạy tháng ${month} - ${year}`;
+
+            //Phân công
+            if(monthData[0][0] && monthData[0][0].SoTiet)
+                declareMonthTable.rows[1].cells[1].textContent = monthData[0][0].SoTiet;
+            else
+                declareMonthTable.rows[1].cells[1].textContent = 0;
+
+            //Dạy
+            if(monthData[1][0] && monthData[1][0].SoTiet)
+                declareMonthTable.rows[2].cells[1].textContent = monthData[1][0].SoTiet;
+            else
+                declareMonthTable.rows[2].cells[1].textContent = 0;
+
+            //Nghỉ cá nhân
+            if(monthData[2][0] && monthData[2][0].SoTiet)
+                declareMonthTable.rows[3].cells[1].textContent = monthData[2][0].SoTiet;
+            else
+                declareMonthTable.rows[3].cells[1].textContent = 0;
+
+            //Nghỉ có quyết định
+            if(monthData[3][0] && monthData[3][0].SoTiet)
+                declareMonthTable.rows[4].cells[1].textContent = monthData[3][0].SoTiet;
+            else
+                declareMonthTable.rows[4].cells[1].textContent = 0;
+
+            //Dạy thay
+            if(monthData[4][0] && monthData[4][0].SoTiet)
+                declareMonthTable.rows[5].cells[1].textContent = monthData[4][0].SoTiet;
+            else
+                declareMonthTable.rows[5].cells[1].textContent = 0;
+
+            //Dạy bù
+            if(monthData[5][0] && monthData[5][0].SoTiet)
+                declareMonthTable.rows[6].cells[1].textContent = monthData[5][0].SoTiet;
+            else
+                declareMonthTable.rows[6].cells[1].textContent = 0;
+
+            //Thực dạy
+            declareMonthTable.rows[7].cells[1].textContent = 
+                parseInt(declareMonthTable.rows[1].cells[1].textContent) - 
+                parseInt(declareMonthTable.rows[3].cells[1].textContent) - 
+                parseInt(declareMonthTable.rows[4].cells[1].textContent) + 
+                parseInt(declareMonthTable.rows[5].cells[1].textContent) +
+                parseInt(declareMonthTable.rows[6].cells[1].textContent);
+        }
+
+        function fillDecreaseTable(positions, missions, weeks) {
+            for (let i = decreaseTable.rows.length - 1; i > 0; i--) {
+                decreaseTable.deleteRow(i);
+            }
+
+
+
+            positions.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${item.Ten}</td><td>${item.SoTietMien} x ${weeks} tuần</td><td>${item.TongSoTietMien}</td>`;
+                decreaseTable.appendChild(row);
+            });
+
+            missions.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${item.Ten}</td><td>${item.SoTietMien} x ${weeks} tuần</td><td>${item.TongSoTietMien}</td>`;
+                decreaseTable.appendChild(row);
+            });
+
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `<td colspan="2">Tổng</td><td>${positions.reduce((sum, item) => sum + item.TongSoTietMien, 0) + missions.reduce((sum, item) => sum + item.TongSoTietMien, 0)}</td>`;
+            decreaseTable.appendChild(totalRow);
+        }
+
+        function fillTotalTable(weeks) {
+            
+
+            totalTable.rows[1].cells[1].textContent = `17 x ${weeks} tuần = ${17*weeks}`;
+            totalTable.rows[2].cells[1].textContent = declareMonthTable.rows[7].cells[1].textContent;
+            totalTable.rows[3].cells[1].textContent = decreaseTable.rows[decreaseTable.rows.length - 1].cells[1].textContent;
+            totalTable.rows[4].cells[1].textContent = 
+                parseInt(totalTable.rows[2].cells[1].textContent) - 
+                17*weeks + 
+                parseInt(totalTable.rows[3].cells[1].textContent);
+        }
+
+        async function exportWord() {
+            try {
+                const response = await axios.post(
+                    "/declare-word-document",
+                    {
+                        month: thangSelect.value,
+                        week: week,
+                        dinhMuc: totalTable.rows[1].cells[1].textContent,
+                        phanCong: declareMonthTable.rows[1].cells[1].textContent,
+                        chiTietPhanCong: detailTimeTable,
+                        nghiCoQuyetDinh: declareMonthTable.rows[4].cells[1].textContent,
+                        chiTietNghiCoQuyetDinh: detailApprovedLeave,
+                        nghiCaNhan: declareMonthTable.rows[3].cells[1].textContent,
+                        chiTietNghiCaNhan: detailPersonelAbsence,
+                        dayBu: declareMonthTable.rows[6].cells[1].textContent,
+                        chiTietDayBu: detailMakeUp,
+                        dayThay: declareMonthTable.rows[5].cells[1].textContent,
+                        chiTietDayThay: detailSubstitute,
+                        thucDay: declareMonthTable.rows[7].cells[1].textContent,
+                        mienGiam: totalTable.rows[3].cells[1].textContent,
+                        chiTietGiuChucVu: detailPosition,
+                        chiTietKiemNhiem: detailMission,
+                        thucHien: parseInt(totalTable.rows[2].cells[1].textContent,10) + parseInt(totalTable.rows[3].cells[1].textContent,10),
+                        duGio: totalTable.rows[4].cells[1].textContent
+                    },
+                    {
+                        responseType: 'blob', // Quan trọng để nhận file
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+
+                const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "ke_khai_quy_mo.docx";
+                link.click();
+            } catch (error) {
+                console.error('Error creating Word file:', error);
+            }
+        }
+
+
+
     </script>
 </body>
 </html>

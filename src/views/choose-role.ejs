@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chọn vai trò</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <div class="choose-role-container">
+        <h2 class="choose-role-title">Chọn vai trò</h2>
+        <div class="role-list">
+            <% Object.keys(permissions).forEach(function(roleKey) { %>
+                <% roles.forEach(role => { %>
+                    <% if( roleKey === role.VT_Ma) { %>
+                        <div class="role" data-role="<%= roleKey %>">
+                            <%= role.VT_Ten %>
+                        </div>
+                    <% } %>
+                <% }) %>
+            <% }) %>
+        </div>
+    </div>
+    
+
+    <script>
+        document.querySelectorAll('.role').forEach(div => {
+            div.addEventListener('click', function() {
+                const selectedRole = this.dataset.role;
+                console.log('Selected Role:', selectedRole);
+                axios.post('/role', { selectedRole })
+                    .then(res => {
+                        if (res.data.redirect) {
+                            window.location.href = res.data.redirect;
+                        }
+                    })
+                    .catch(err => {
+                        alert('Lỗi: ' + err.response.data.error);
+                    });
+
+            });
+        });
+    </script>
+
+</body>
+</html>

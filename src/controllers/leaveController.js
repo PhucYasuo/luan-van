@@ -1,4 +1,7 @@
 const connection = require('../config/database');
+const upload = require('../middleware/upload'); // Đường dẫn đúng tới file upload.js
+const fs = require('fs');
+const path = require('path');
 
 const getLeaveReport = async (req, res) => {
     const teachers = await getTeacherInDepartment(req, res);
@@ -79,6 +82,8 @@ const postLeaveData = async (req, res) => {
             await checkIsChangeTT002(req, res, key, detail);
         }
     }
+
+    return res.json({ message: 'Cập nhật thành công' });
 
 };
 

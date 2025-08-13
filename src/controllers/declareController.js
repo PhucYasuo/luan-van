@@ -1,3 +1,4 @@
+const { sectionMarginDefaults } = require('docx');
 const connection = require('../config/database');
 
 const getDeclare = async (req, res) => {
@@ -6,98 +7,264 @@ const getDeclare = async (req, res) => {
     });
 }
 
-const getTimeTable = async (req, namHoc, firstDay, lastDay) => {
+const getTimeTableByMonth = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
-        SELECT
-            CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop,
-            m.M_Ten AS TenMon,
-            SUM(tkb.TKB_SoTiet) AS SoTiet
+        SELECT SUM(TKB_SoTiet) AS SoTiet
         FROM thoikhoabieu tkb, monhoc m
         WHERE tkb.M_Ma = m.M_Ma
         AND tkb.NH_NamHoc = ?
         AND tkb.GV_Ma = ?
         AND tkb.TKB_Ngay BETWEEN ? AND ?
-        GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,
+        AND (tkb.TT_Ma = 'TT001' OR tkb.TT_Ma = 'TT002')`,
         [namHoc, req.session.user.maGV, firstDay, lastDay]
     );
     return results;
 }
 
-const getApprovedLeave = async (req, namHoc, firstDay, lastDay) => {
+const getTimeTableByWeek = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
-        SELECT
-            CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop,
-            m.M_Ten AS TenMon,
-            SUM(tkb.TKB_SoTiet) AS SoTiet
-        FROM thoikhoabieu tkb, monhoc m, dinhkem dk
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb, monhoc m
         WHERE tkb.M_Ma = m.M_Ma
-        AND tkb.TKB_ID = dk.TKB_ID
         AND tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND (tkb.TT_Ma = 'TT001' OR tkb.TT_Ma = 'TT002')
+        GROUP BY T_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getOnTeachByMonth = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb, monhoc m
+        WHERE tkb.M_Ma = m.M_Ma
+        AND tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT001'`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getOnTeachByWeek = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb, monhoc m
+        WHERE tkb.M_Ma = m.M_Ma
+        AND tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT001'
+        GROUP BY T_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;    
+}
+
+const getApprovedLeaveByMonth = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE tkb.NH_NamHoc = ?
         AND tkb.GV_Ma = ?
         AND tkb.TKB_Ngay BETWEEN ? AND ?
         AND tkb.TT_Ma = 'TT002'
-        GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,
+        AND dk.TKB_ID is not null`,
         [namHoc, req.session.user.maGV, firstDay, lastDay]
     );
     return results;
 }
 
-const getPersonelAbsence = async (req, namHoc, firstDay, lastDay) => {
+const getApprovedLeaveByWeek = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
-        SELECT 
-            CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop, 
-            m.M_Ten AS TenMon, 
-            SUM(tkb.TKB_SoTiet) AS SoTiet
-        FROM thoikhoabieu tkb, monhoc m
-        WHERE tkb.M_Ma = m.M_Ma
-        AND tkb.NH_NamHoc = ?
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE tkb.NH_NamHoc = ?
         AND tkb.GV_Ma = ?
-        AND tkb.TT_Ma = 'TT002'
         AND tkb.TKB_Ngay BETWEEN ? AND ?
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM dinhkem dk 
-            WHERE dk.TKB_ID = tkb.TKB_ID
-        )
-        GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,
+        AND tkb.TT_Ma = 'TT002'
+        AND dk.TKB_ID is not null
+        GROUP BY T_Ma`,
         [namHoc, req.session.user.maGV, firstDay, lastDay]
     );
     return results;
 }
 
-const getMakeUp = async (req, namHoc, firstDay, lastDay) => {
+const getPersonelAbsenceByMonth = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
-        SELECT
-            CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop,
-            m.M_Ten AS TenMon,
-            SUM(tkb.TKB_SoTiet) AS SoTiet
-        FROM thoikhoabieu tkb, monhoc m
-        WHERE tkb.M_Ma = m.M_Ma
-        AND tkb.NH_NamHoc = ?
+        SELECT SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE tkb.NH_NamHoc = ?
         AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT002'
+        AND dk.TKB_ID is null`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getPersonelAbsenceByWeek = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT002'
+        AND dk.TKB_ID is null
+        GROUP BY T_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getMakeUpByMonth = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT003'`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getMakeUpByWeek = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE tkb.NH_NamHoc = ?
+        AND tkb.GV_Ma = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
         AND tkb.TT_Ma = 'TT003'
-        AND tkb.TKB_Ngay BETWEEN ? AND ?
-        GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,
+        GROUP BY T_Ma`,
         [namHoc, req.session.user.maGV, firstDay, lastDay]
     );
     return results;
 }
 
-const getSubstitute = async (req, namHoc, firstDay, lastDay) => {
+const getSubstituteByMonth = async (req, namHoc, firstDay, lastDay) => {
     const [results] = await connection.promise().query(`
-        SELECT
-            CONCAT(tkb.K_Khoi, tkb.KH_KyHieu, tkb.L_STTLop) AS Lop,
-            m.M_Ten AS TenMon,
-            SUM(tkb.TKB_SoTiet) AS SoTiet
-        FROM thoikhoabieu tkb, monhoc m
-        WHERE tkb.M_Ma = m.M_Ma
-        AND tkb.NH_NamHoc = ?
+        SELECT SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE tkb.NH_NamHoc = ?
         AND tkb.GV_DayThay = ?
-        AND tkb.TT_Ma = 'TT004'
         AND tkb.TKB_Ngay BETWEEN ? AND ?
-        GROUP BY tkb.GV_Ma, m.M_Ma, tkb.L_STTLop, tkb.K_Khoi, tkb.KH_KyHieu`,
+        AND tkb.TT_Ma = 'TT004'`,
         [namHoc, req.session.user.maGV, firstDay, lastDay]
     );
+    return results;
+}
+
+const getSubstituteByWeek = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT SUBSTRING(T_Ma,2,2) AS Tuan, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE tkb.NH_NamHoc = ?
+        AND tkb.GV_DayThay = ?
+        AND tkb.TKB_Ngay BETWEEN ? AND ?
+        AND tkb.TT_Ma = 'TT004'
+        GROUP BY T_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getDetailTimeTable = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, M_Ten AS TenMon, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE NH_NamHoc = ?
+        AND GV_Ma = ?
+        AND TKB_Ngay BETWEEN ? AND ?
+        AND (TT_Ma = 'TT001' OR TT_Ma = 'TT002')
+        GROUP BY L_STTLop, K_Khoi, KH_KyHieu, tkb.M_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    );
+    return results;
+}
+
+const getDetailApprovedLeave = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, M_Ten AS TenMon, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE NH_NamHoc = ?
+        AND GV_Ma = ?
+        AND TKB_Ngay BETWEEN ? AND ?
+        AND TT_Ma = 'TT002'
+        AND dk.TKB_ID is not null
+        GROUP BY L_STTLop, K_Khoi, KH_KyHieu, tkb.M_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    )
+    return results;
+}
+
+const getDetailPersonelAbsence = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, M_Ten AS TenMon, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        LEFT JOIN dinhkem dk ON tkb.TKB_ID = dk.TKB_ID
+        WHERE NH_NamHoc = ?
+        AND GV_Ma = ?
+        AND TKB_Ngay BETWEEN ? AND ?
+        AND TT_Ma = 'TT002'
+        AND dk.TKB_ID is null
+        GROUP BY L_STTLop, K_Khoi, KH_KyHieu, tkb.M_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    )
+    return results;
+}
+
+const getDetailMakeUp = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, M_Ten AS TenMon, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE NH_NamHoc = ?
+        AND GV_Ma = ?
+        AND TKB_Ngay BETWEEN ? AND ?
+        AND TT_Ma = 'TT003'
+        GROUP BY L_STTLop, K_Khoi, KH_KyHieu, tkb.M_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    )
+    return results;
+}
+
+const getDetailSubstitute = async (req, namHoc, firstDay, lastDay) => {
+    const [results] = await connection.promise().query(`
+        SELECT CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, M_Ten AS TenMon, SUM(TKB_SoTiet) AS SoTiet
+        FROM thoikhoabieu tkb
+        JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+        WHERE NH_NamHoc = ?
+        AND GV_DayThay= ?
+        AND TKB_Ngay BETWEEN ? AND ?
+        AND TT_Ma = 'TT004'
+        GROUP BY L_STTLop, K_Khoi, KH_KyHieu, tkb.M_Ma`,
+        [namHoc, req.session.user.maGV, firstDay, lastDay]
+    )
     return results;
 }
 
@@ -139,13 +306,24 @@ const getMonth = async (req, res) => {
 const getDataDeclare = async (req, res) => {
     const { month, year, namHoc } = req.query;
     const { weeks, firstDay, lastDay, firstWeekNumber, lastWeekNumber } = await getWeeksInMonth(year, month);
-    const timeTableData = await getTimeTable(req, namHoc, firstDay, lastDay);
-    const approvedLeaveData = await getApprovedLeave(req, namHoc, firstDay, lastDay);
-    const personelAbsenceData = await getPersonelAbsence(req, namHoc, firstDay, lastDay);
-    const makeUpData = await getMakeUp(req, namHoc, firstDay, lastDay);
-    const substituteData = await getSubstitute(req, namHoc, firstDay, lastDay);
+    const timeTableData = await getTimeTableByMonth(req, namHoc, firstDay, lastDay);
+    const timeTableWeekData = await getTimeTableByWeek(req, namHoc, firstDay, lastDay);
+    const detailTimeTableData = await getDetailTimeTable(req, namHoc, firstDay, lastDay);
+    const onTeachData = await getOnTeachByMonth(req, namHoc, firstDay, lastDay);
+    const onTeachWeekData = await getOnTeachByWeek(req, namHoc, firstDay, lastDay);
+    const approvedLeaveData = await getApprovedLeaveByMonth(req, namHoc, firstDay, lastDay);
+    const approvedLeaveWeekData = await getApprovedLeaveByWeek(req, namHoc, firstDay, lastDay);
+    const detailApprovedLeaveData = await getDetailApprovedLeave(req, namHoc, firstDay, lastDay);
+    const personelAbsenceData = await getPersonelAbsenceByMonth(req, namHoc, firstDay, lastDay);
+    const personelAbsenceWeekData = await getPersonelAbsenceByWeek(req, namHoc, firstDay, lastDay);
+    const detailPersonelAbsenceData = await getDetailPersonelAbsence(req, namHoc, firstDay, lastDay);
+    const makeUpData = await getMakeUpByMonth(req, namHoc, firstDay, lastDay);
+    const makeUpWeekData = await getMakeUpByWeek(req, namHoc, firstDay, lastDay);
+    const detailMakeUpData = await getDetailMakeUp(req, namHoc, firstDay, lastDay);
+    const substituteData = await getSubstituteByMonth(req, namHoc, firstDay, lastDay);
+    const substituteWeekData = await getSubstituteByWeek(req, namHoc, firstDay, lastDay);
+    const detailSubstituteData = await getDetailSubstitute(req, namHoc, firstDay, lastDay);
     const {positions, missions} = await checkWeekSemester(req, res, firstWeekNumber, lastWeekNumber, namHoc);
-
     res.json({
         weeks,
         firstDay,
@@ -153,10 +331,22 @@ const getDataDeclare = async (req, res) => {
         firstWeekNumber,
         lastWeekNumber,
         timeTableData,
+        timeTableWeekData,
+        detailTimeTableData,
+        onTeachData,
+        onTeachWeekData,
         approvedLeaveData,
+        approvedLeaveWeekData,
+        detailApprovedLeaveData,
         personelAbsenceData,
+        personelAbsenceWeekData,
+        detailPersonelAbsenceData,
         makeUpData,
+        makeUpWeekData,
+        detailMakeUpData,
         substituteData,
+        substituteWeekData,
+        detailSubstituteData,
         positions,
         missions
     });
@@ -198,7 +388,7 @@ const checkWeekSemester = async (req, res, firstWeekNumber, lastWeekNumber, namH
 
 const getPosition = async (req, res, hocKy, namHoc, weekNum) => {
     const result = await connection.promise().query(`
-        SELECT cv.CV_Ten AS Ten, gcv.HK_HocKy AS HocKy, CV_SoTietMien*? AS SoTietMien
+        SELECT cv.CV_Ten AS Ten, CV_SoTietMien AS SoTietMien, CV_SoTietMien*? AS TongSoTietMien
         FROM giuchucvu gcv, chucvu cv
         WHERE gcv.CV_Ma = cv.CV_Ma
         AND gcv.GV_Ma = ?
@@ -239,7 +429,7 @@ const getPosition1 = async (req, res, namHoc, fistSW, lastSW) => {
 
 const getMission = async (req, res, hocKy, namHoc, weekNum) => {
     const result = await connection.promise().query(`
-        SELECT nv.NV_Ten AS Ten, kn.HK_HocKy AS HocKy, nv.NV_SoTietMien*? AS SoTietMien
+        SELECT nv.NV_Ten AS Ten, NV_SoTietMien AS SoTietMien, nv.NV_SoTietMien*? AS TongSoTietMien
         FROM kiemnhiem kn, nhiemvu nv
         WHERE kn.NV_Ma = nv.NV_Ma
         AND kn.GV_Ma = ?
@@ -355,6 +545,32 @@ const getLastDayOfSchoolYear = async (year) => {
     return results.length ? results[0].T_NgayKT : null;
 }
 
+const getTimeTable = async (req, res) => {
+    const { firstDay, lastDay, namHoc } = req.query;
+
+    try {
+        const [results] = await connection.promise().query(`
+            SELECT *, SUBSTRING(T_Ma,2,2) AS Tuan, m.M_Ten, CONCAT(K_Khoi,KH_KyHieu,L_STTLop) AS Lop, dk.TKB_ID AS DK_ID
+            FROM thoikhoabieu tkb
+            JOIN monhoc m ON tkb.M_Ma = m.M_Ma
+            LEFT JOIN dinhkem dk on tkb.TKB_ID = dk.TKB_ID
+            WHERE ((GV_Ma = ? AND TT_Ma <> 'TT004')OR (GV_DayThay = ? AND TT_Ma = 'TT004'))
+            AND TKB_Ngay BETWEEN ? AND ?
+            AND NH_NamHoc = ?
+            ORDER BY TKB_TietBD, TKB_Ngay`,
+            [req.session.user.maGV, req.session.user.maGV, firstDay, lastDay, namHoc]
+        );
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Không tìm thấy thời khóa biểu' });
+        }
+        return res.json(results);
+        
+    } catch (err) {
+        console.error("Lỗi khi lấy thời khóa biểu:", err);
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+}
+
 function getFormattedDay(date) {
 	const yyyy = date.getFullYear();
 	const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -375,8 +591,484 @@ const getWeekNumber = async (date) => {
     return weekCode.length >= 3 ? weekCode.slice(1, 3) : null;
 }
 
+const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, TabStopType, TabStopPosition} = require('docx');
+
+const createWordDocument = async (req, res) => {
+    const {
+        month,
+        week,
+        dinhMuc,
+        phanCong,
+        chiTietPhanCong,
+        nghiCoQuyetDinh,
+        chiTietNghiCoQuyetDinh,
+        nghiCaNhan,
+        chiTietNghiCaNhan,
+        dayBu,
+        chiTietDayBu,
+        dayThay,
+        chiTietDayThay,
+        thucDay,
+        mienGiam,
+        chiTietGiuChucVu,
+        chiTietKiemNhiem,
+        thucHien,
+        duGio} = req.body;
+
+    const dinhMucFirst = dinhMuc.substring(0, dinhMuc.lastIndexOf(' '));
+    const dinhMucLast = dinhMuc.substring(dinhMuc.lastIndexOf(' ') + 1);
+
+    const today = new Date();
+    const daySign = today.getDate();
+    const monthSign = today.getMonth()+1;
+    const yearSign = today.getFullYear();
+
+    try{
+        const chiTietPhanCongs = chiTietPhanCong.map(item =>
+            new Paragraph({
+                indent: {
+                    firstLine: 567 // 1 cm
+                },
+                children: [
+                    new TextRun({ text: `${item.Lop} - ${item.TenMon}: `,size: 26}),
+                    new TextRun("\t"),
+                    new TextRun({ text: `${item.SoTiet} tiết`, size: 26 }),
+                ],
+                tabStops: [
+                    {
+                        type: TabStopType.LEFT,
+                        position: 3000,
+                    }
+                ]
+
+            })
+        );
+
+        const chiTietNghiCaNhans = chiTietNghiCaNhan.map(item =>
+            new Paragraph({
+                indent: {
+                    firstLine: 567 // 1 cm
+                },
+                children: [
+                    new TextRun({ text: `${item.Lop} - ${item.TenMon}: `,size: 26}),
+                    new TextRun("\t"),
+                    new TextRun({ text: `${item.SoTiet} tiết`, size: 26 }),
+                ],
+                tabStops: [
+                    {
+                        type: TabStopType.LEFT,
+                        position: 3000,
+                    }
+                ]
+
+            })
+        );
+
+        const chiTietNghiCoQuyetDinhs = chiTietNghiCoQuyetDinh.map(item =>
+            new Paragraph({
+                indent: {
+                    firstLine: 567 // 1 cm
+                },
+                children: [
+                    new TextRun({ text: `${item.Lop} - ${item.TenMon}: `,size: 26}),
+                    new TextRun("\t"),
+                    new TextRun({ text: `${item.SoTiet} tiết`, size: 26 }),
+                ],
+                tabStops: [
+                    {
+                        type: TabStopType.LEFT,
+                        position: 3000,
+                    }
+                ]
+
+            })
+        );
+
+        const chiTietDayBus = chiTietDayBu.map(item =>
+            new Paragraph({
+                indent: {
+                    firstLine: 567 // 1 cm
+                },
+                children: [
+                    new TextRun({ text: `${item.Lop} - ${item.TenMon}: `,size: 26}),
+                    new TextRun("\t"),
+                    new TextRun({ text: `${item.SoTiet} tiết`, size: 26 }),
+                ],
+                tabStops: [
+                    {
+                        type: TabStopType.LEFT,
+                        position: 3000,
+                    }
+                ]
+
+            })
+        );
+
+        const chiTietDayThays = chiTietDayThay.map(item =>
+            new Paragraph({
+                indent: {
+                    firstLine: 567 // 1 cm
+                },
+                children: [
+                    new TextRun({ text: `${item.Lop} - ${item.TenMon}: `,size: 26}),
+                    new TextRun("\t"),
+                    new TextRun({ text: `${item.SoTiet} tiết`, size: 26 }),
+                ],
+                tabStops: [
+                    {
+                        type: TabStopType.LEFT,
+                        position: 3000,
+                    }
+                ]
+
+            })
+        );
+
+        const chucvus = [];
+        if(chiTietGiuChucVu?.length){
+            chucvus.push(
+                new Paragraph({
+                    indent: {
+                        firstLine: 567 // 1 cm
+                    },
+                    children: [
+                        new TextRun({ text: `Chức vụ: `,size: 26, bold: true}),
+                    ]
+                })
+            );
+
+            chucvus.push(
+                ...chiTietGiuChucVu.map(item =>
+                    new Paragraph({
+                        indent: {
+                            firstLine: 567 // 1 cm
+                        },
+                        children: [
+                            new TextRun({ text: `${item.Ten}: `,size: 26}),
+                            new TextRun("\t"),
+                            new TextRun({ text: `${item.SoTietMien} x ${week} tuần = ${item.TongSoTietMien} tiết`, size: 26 }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.LEFT,
+                                position: 6000,
+                            }
+                        ]
+        
+                    })
+                )
+            );
+        };
+
+        const kiemnhiems = [];
+        if(chiTietKiemNhiem?.length){
+            kiemnhiems.push(
+                new Paragraph({
+                    indent: {
+                        firstLine: 567 // 1 cm
+                    },
+                    children: [
+                        new TextRun({ text: `Kiêm nhiệm: `,size: 26, bold: true}),
+                    ]
+                })
+            );
+
+            kiemnhiems.push(
+                ...chiTietKiemNhiem.map(item =>
+                    new Paragraph({
+                        indent: {
+                            firstLine: 567 // 1 cm
+                        },
+                        children: [
+                            new TextRun({ text: `${item.Ten}: `,size: 26}),
+                            new TextRun("\t"),
+                            new TextRun({ text: `${item.SoTietMien} x ${week} tuần = ${item.TongSoTietMien} tiết`, size: 26 }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.LEFT,
+                                position: 6000,
+                            }
+                        ]
+        
+                    })
+                )
+            );
+        };
+
+        const doc = new Document({
+            sections: [{
+                children: [
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            line: 360, 
+                            after: 200, 
+                        },
+                        children: [
+                            new TextRun({ text: "KÊ KHAI QUY MÔ GIẢNG DẠY THÁNG " + month, bold: true, size: 28, allCaps: true })
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: `Tên giáo viên: `, size: 26, bold: true }),
+                            new TextRun({ text: `${req.session.user.tenGV}`, size: 26 }),
+                            new TextRun("\t"),
+                            new TextRun({ text: `Thuộc bộ môn: `, size: 26, bold: true }),
+                            new TextRun({ text: `${req.session.user.tenBM}`, size: 26 }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        children: [
+                            new TextRun({ text: `Chức vụ: `, size: 26, bold: true }),
+                            new TextRun({ text: `${req.session.user.tenCV}`, size: 26 }),
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "1. Định mức tiết dạy theo thông tư 05/2025/TT-BGDĐT", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: dinhMucFirst + " ", size: 26}),
+                            new TextRun({ text: dinhMucLast + " tiết (1)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "2. Số tiết được phân công theo thời khoá biểu", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: phanCong + " tiết (2)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chiTietPhanCongs,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200, 
+                        },
+                        children: [
+                            new TextRun({ text: "3. Quá trình thay đổi so với thời khoá biểu: ", size: 26, bold: true }),
+                        ],
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "3.1. Số tiết nghỉ có quyết định: ", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: nghiCoQuyetDinh + " tiết (3)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chiTietNghiCoQuyetDinhs,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "3.2. Số tiết nghỉ việc riêng: ", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: nghiCaNhan + " tiết (4)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chiTietNghiCaNhans,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "3.3. Số tiết dạy bù: ", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: dayBu + " tiết (5)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chiTietDayBus,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "3.4. Số tiết dạy thay: ", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: dayThay + " tiết (6)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chiTietDayThays,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "5. Số tiết thực dạy: (2)-(3)-(4)+(5)+(6)", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: thucDay + " tiết (7)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "6. Số tiết giảm giờ định mức đối với giáo viên giữ chức vụ, kiêm nhiệm: ", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: mienGiam + " tiết (8)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    ...chucvus,
+                    ...kiemnhiems,
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "7. Tổng số tiết thực hiện: (7)+(8)", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: thucHien + " tiết (9)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.LEFT,
+                        spacing: {
+                            before: 200,
+                        },
+                        children: [
+                            new TextRun({ text: "8. Số tiết dư giờ: (9)-(1)", size: 26, bold: true }),
+                            new TextRun("\t"),
+                            new TextRun({ text: duGio + " tiết (10)", size: 26, bold: true }),
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.RIGHT,
+                                position: TabStopPosition.MAX, // tab stop ở cuối dòng
+                            }
+                        ]
+                    }),
+                    new Paragraph("\n"),
+                    new Paragraph("\n"),
+                    new Paragraph({
+                        alignment: AlignmentType.RIGHT,
+                        children: [
+                            new TextRun({ text: `Cần Thơ, ngày ${daySign} tháng ${monthSign} năm ${yearSign}`, size: 26 }),
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun("\t"),
+                            new TextRun({ text: "Tổ trưởng", size: 26, bold: true}),
+                            new TextRun("\t"),
+                            new TextRun({ text: "Người kê khai", size: 26, bold: true})
+                        ],
+                        tabStops: [
+                            {
+                                type: TabStopType.LEFT,
+                                position: 1200
+                            },
+                            {
+                                type: TabStopType.LEFT,
+                                position: 6300
+                            }
+                        ]
+                    })
+                    
+
+                ],
+            }]
+        });
+        const buffer = await Packer.toBuffer(doc);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', 'attachment; filename=ke_khai_quy_mo.docx');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Lỗi tạo file Word:', error);
+        res.status(500).send('Lỗi tạo file Word');
+    }
+    
+    
+}
+
 module.exports = {
     getDeclare,
     getMonth,
-    getDataDeclare
+    getDataDeclare,
+    getTimeTable,
+    createWordDocument
 };

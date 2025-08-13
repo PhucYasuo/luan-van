@@ -4,6 +4,7 @@ const {
     getDashboard,
     getSignIn,
     postSignIn,
+    postRole,
     getLogout,
     getHocKys,
     getNamHocs
@@ -37,8 +38,16 @@ const {
 const {
     getDeclare,
     getMonth,
-    getDataDeclare
+    getDataDeclare,
+    getTimeTable,
+    createWordDocument
 } = require('../controllers/declareController');
+
+const {
+    getAssignPermission,
+    getGiaoviens,
+    getPermissionByID
+} = require('../controllers/assignPermissionController');
 
 const router = express.Router();
 
@@ -47,6 +56,7 @@ router.get('/', getHomepage);
 router.get('/dashboard', getDashboard);
 router.get('/sign-in', getSignIn);
 router.post('/sign-in', postSignIn);
+router.post('/role', postRole);
 router.get('/logout', getLogout);
 router.get('/hoc-kys', getHocKys);
 router.get('/nam-hocs', getNamHocs);
@@ -78,6 +88,13 @@ router.get('/schedule', getSchedule);
 router.get('/declare', getDeclare);
 router.get('/declare-month', getMonth);
 router.get('/declare-data', getDataDeclare);
+router.get('/declare-time-table', getTimeTable);
+router.post('/declare-word-document', createWordDocument);
+
+// assignPermissionController
+router.get('/assign-permission', getAssignPermission);
+router.get('/giao-viens', getGiaoviens);
+router.get('/permission-by-id', getPermissionByID);
 
 
 module.exports = router; 

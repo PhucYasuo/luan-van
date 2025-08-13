@@ -49,8 +49,12 @@ const postSignIn = async (req, res) => {
 			else if(req.session.user.gioiTinh == 1) {
 				req.session.user.gioiTinhShow = "Nữ";
 			}
+
+            const countRole = Object.keys(req.session.user.permissions).length;
+
+			res.redirect(`/dashboard`); 
+
             
-            res.redirect(`/dashboard`); 
         } else {
             res.render('sign-in', { errorMessage: 'Đăng nhập thất bại. Sai tài khoản hoặc mật khẩu!' });
         }
@@ -59,6 +63,20 @@ const postSignIn = async (req, res) => {
         res.send('Lỗi trong quá trình xử lý yêu cầu.');
     }
 };
+
+
+
+const postRole = (req, res) => {
+    const { selectedRole } = req.body;
+	console.log("Vai trò được chọn:", selectedRole);
+    if (selectedRole) {
+        req.session.user.role = selectedRole;
+        res.json({ redirect: '/dashboard' });
+    } else {
+        res.status(400).json({ error: 'Vai trò không hợp lệ hoặc không có quyền truy cập.' });
+    }
+};
+
 
 const getAccount = async (account, password) => {
     const [results] = await connection.promise().query(
@@ -70,7 +88,10 @@ const getAccount = async (account, password) => {
 
 const assignPermission = async (req, res, maTK) => {
 	const [results] = await connection.promise().query(
-		'SELECT VT_Ma, Q_Ma FROM sohuuquyen WHERE TK_Ma = ?',
+		`SELECT cvt.TK_Ma, shq.*
+		FROM covaitro cvt, sohuuquyen shq
+		WHERE cvt.VT_Ma = shq.VT_Ma
+		AND cvt.TK_Ma = ?`,
 		[maTK]
 	);
 	if (results.length > 0) {
@@ -168,7 +189,6 @@ function getPermissionByRole(permissions) {
 		}
 		quyenTheoVaiTro[VT_Ma].push(Q_Ma);
 	}
-
 	return quyenTheoVaiTro;
 }
 
@@ -223,6 +243,7 @@ module.exports = {
 	getDashboard,
 	getSignIn,
 	postSignIn,
+	postRole,
 	getLogout,
 	getHocKys,
 	getNamHocs

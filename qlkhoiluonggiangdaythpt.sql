@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS kiemnhiem;
 DROP TABLE IF EXISTS nhiemvu;
 DROP TABLE IF EXISTS giuchucvu;
 DROP TABLE IF EXISTS chucvu;
+DROP TABLE IF EXISTS covaitro;
 DROP TABLE IF EXISTS sohuuquyen;
 DROP TABLE IF EXISTS quyen;
 DROP TABLE IF EXISTS vaitro;
@@ -225,6 +226,48 @@ INSERT INTO vaitro (VT_Ma, VT_Ten) VALUES
 ('VT004', 'Tổ Trưởng Bộ Môn'),
 ('VT005', 'Giáo Viên');
 
+CREATE TABLE covaitro (
+  TK_Ma char(5) NOT NULL,
+  VT_Ma char(5) NOT NULL,
+  PRIMARY KEY (TK_Ma, VT_Ma),
+  FOREIGN KEY (TK_Ma) REFERENCES taikhoan (TK_Ma) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (VT_Ma) REFERENCES vaitro (VT_Ma) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
+
+INSERT INTO covaitro (TK_Ma, VT_Ma) VALUES
+('TK001', 'VT002'), -- Hiệu trưởng
+('TK001', 'VT005'),
+('TK002', 'VT004'), -- Tổ trưởng bộ môn
+('TK002', 'VT005'),
+('TK003', 'VT005'),
+('TK004', 'VT005'),
+('TK005', 'VT001'), -- Admin
+('TK005', 'VT005'),
+('TK006', 'VT003'), -- Hiệu phó chuyên môn
+('TK006', 'VT005'),
+('TK007', 'VT005'),
+('TK008', 'VT005'),
+('TK009', 'VT005'),
+('TK010', 'VT005'),
+('TK011', 'VT005'),
+('TK012', 'VT005'),
+('TK013', 'VT005'),
+('TK014', 'VT005'),
+('TK015', 'VT005'),
+('TK016', 'VT005'),
+('TK017', 'VT005'),
+('TK018', 'VT005'),
+('TK019', 'VT005'),
+('TK020', 'VT005'),
+('TK021', 'VT005'),
+('TK022', 'VT005'),
+('TK023', 'VT005'),
+('TK024', 'VT005'),
+('TK025', 'VT005'),
+('TK026', 'VT005'),
+('TK027', 'VT005'),
+('TK028', 'VT005');
+
 CREATE TABLE quyen (
   Q_Ma char(5) NOT NULL,
   Q_Ten varchar(50) NOT NULL,
@@ -239,34 +282,19 @@ INSERT INTO quyen (Q_Ma, Q_Ten) VALUES
 ('Q0005', 'Lập thời khoá biểu');
 
 CREATE TABLE sohuuquyen (
-  TK_Ma char(5) NOT NULL,
   VT_Ma char(5) NOT NULL,
   Q_Ma char(5) NOT NULL,
-  PRIMARY KEY (Q_Ma, VT_Ma, TK_Ma),
+  PRIMARY KEY (Q_Ma, VT_Ma),
   FOREIGN KEY (Q_Ma) REFERENCES quyen (Q_Ma) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (TK_Ma) REFERENCES taikhoan (TK_Ma) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (VT_Ma) REFERENCES vaitro (VT_Ma) ON DELETE CASCADE ON UPDATE CASCADE
 )ENGINE=InnoDB;
 
-INSERT INTO sohuuquyen (TK_Ma, VT_Ma, Q_Ma) VALUES
-('TK001', 'VT001', 'Q0001'),
-('TK001', 'VT005', 'Q0003'),
-('TK001', 'VT005', 'Q0004'),
-
-('TK002', 'VT005', 'Q0003'),
-('TK002', 'VT005', 'Q0004'),
-
-('TK003', 'VT005', 'Q0003'),
-('TK003', 'VT005', 'Q0004'),
-
-('TK004', 'VT005', 'Q0003'),
-('TK004', 'VT005', 'Q0004'),
-
-('TK005', 'VT005', 'Q0003'),
-('TK005', 'VT005', 'Q0004'),
-
-('TK006', 'VT005', 'Q0003'),
-('TK006', 'VT005', 'Q0004');
+INSERT INTO sohuuquyen (VT_Ma, Q_Ma) VALUES
+('VT001', 'Q0001'),
+('VT003', 'Q0002'),
+('VT003', 'Q0005'),
+('VT005', 'Q0003'),
+('VT005', 'Q0004');
 
 CREATE TABLE chucvu (
   CV_Ma char(5) NOT NULL,
@@ -304,6 +332,7 @@ INSERT INTO giuchucvu (GV_Ma, CV_Ma, HK_HocKy, NH_NamHoc) VALUES
 ('GV020', 'CV003', '1', '2023-2024'),
 ('GV024', 'CV003', '1', '2023-2024'),
 ('GV026', 'CV003', '1', '2023-2024'),
+('GV005', 'CV004', '1', '2023-2024'),
 
 ('GV001', 'CV001', '2', '2023-2024'),
 ('GV006', 'CV002', '2', '2023-2024'),
@@ -314,6 +343,7 @@ INSERT INTO giuchucvu (GV_Ma, CV_Ma, HK_HocKy, NH_NamHoc) VALUES
 ('GV020', 'CV003', '2', '2023-2024'),
 ('GV024', 'CV003', '2', '2023-2024'),
 ('GV026', 'CV003', '2', '2023-2024'),
+('GV005', 'CV004', '2', '2023-2024'),
 
 ('GV001', 'CV001', '1', '2024-2025'),
 ('GV006', 'CV002', '1', '2024-2025'),
@@ -324,6 +354,8 @@ INSERT INTO giuchucvu (GV_Ma, CV_Ma, HK_HocKy, NH_NamHoc) VALUES
 ('GV020', 'CV003', '1', '2024-2025'),
 ('GV024', 'CV003', '1', '2024-2025'),
 ('GV026', 'CV003', '1', '2024-2025'),
+('GV005', 'CV004', '1', '2024-2025'),
+
 
 ('GV001', 'CV001', '2', '2024-2025'),
 ('GV006', 'CV002', '2', '2024-2025'),
@@ -333,7 +365,8 @@ INSERT INTO giuchucvu (GV_Ma, CV_Ma, HK_HocKy, NH_NamHoc) VALUES
 ('GV016', 'CV003', '2', '2024-2025'),
 ('GV020', 'CV003', '2', '2024-2025'),
 ('GV024', 'CV003', '2', '2024-2025'),
-('GV026', 'CV003', '2', '2024-2025');
+('GV026', 'CV003', '2', '2024-2025'),
+('GV005', 'CV004', '2', '2024-2025');
 
 
 CREATE TABLE nhiemvu (
@@ -1819,218 +1852,218 @@ CREATE TABLE lichdaybu (
   FOREIGN KEY (TKB_ID_DayBu) REFERENCES thoikhoabieu (TKB_ID) ON DELETE CASCADE ON UPDATE CASCADE
 )ENGINE=InnoDB;
 
-DELIMITER //
+  DELIMITER //
 
-CREATE PROCEDURE GenerateSchedule()
-BEGIN
-    DECLARE week_num INT DEFAULT 2;
-    DECLARE week_code VARCHAR(7);
-    DECLARE new_date DATE;
+  CREATE PROCEDURE GenerateSchedule()
+  BEGIN
+      DECLARE week_num INT DEFAULT 2;
+      DECLARE week_code VARCHAR(7);
+      DECLARE new_date DATE;
 
-    -- Tạo bảng tạm để lưu dữ liệu mẫu
-    CREATE TEMPORARY TABLE temp_thoikhoabieu (
-        GV_Ma CHAR(5),
-        M_Ma CHAR(5),
-        L_STTLop VARCHAR(2),
-        K_Khoi CHAR(2),
-        KH_KyHieu CHAR(1),
-        NH_NamHoc CHAR(9),
-        HK_HocKy CHAR(1),
-        TKB_Ngay DATE,
-        TKB_TietBD INT,
-        TKB_SoTiet INT,
-        T_Ma CHAR(7)
-    );
+      -- Tạo bảng tạm để lưu dữ liệu mẫu
+      CREATE TEMPORARY TABLE temp_thoikhoabieu (
+          GV_Ma CHAR(5),
+          M_Ma CHAR(5),
+          L_STTLop VARCHAR(2),
+          K_Khoi CHAR(2),
+          KH_KyHieu CHAR(1),
+          NH_NamHoc CHAR(9),
+          HK_HocKy CHAR(1),
+          TKB_Ngay DATE,
+          TKB_TietBD INT,
+          TKB_SoTiet INT,
+          T_Ma CHAR(7)
+      );
 
-    -- Chèn dữ liệu mẫu cho tuần T012425
-    INSERT INTO temp_thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma) VALUES
-    ('GV001', 'MON01', '1', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
-    ('GV004', 'MON01', '2', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
-    ('GV005', 'MON01', '3', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
-    ('GV002', 'MON01', '1', '11', 'P', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
-    ('GV002', 'MON01', '1', '12', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
-    ('GV003', 'MON01', '2', '12', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
-    ('GV003', 'MON01', '3', '12', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
-    ('GV003', 'MON01', '4', '12', 'A', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
-    ('GV003', 'MON01', '1', '12', 'P', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
-    ('GV004', 'MON01', '2', '12', 'P', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
-    ('GV004', 'MON01', '1', '10', 'A', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
-    ('GV004', 'MON01', '2', '10', 'A', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
-    ('GV005', 'MON01', '3', '10', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
-    ('GV005', 'MON01', '1', '10', 'P', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
-    ('GV005', 'MON01', '2', '10', 'P', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
-    ('GV001', 'MON13', '1', '11', 'A', '2024-2025', '1', '2024-08-30', 1, 1, 'T012425'),
-    ('GV004', 'MON13', '2', '11', 'A', '2024-2025', '1', '2024-08-30', 2, 1, 'T012425'),
-    ('GV005', 'MON13', '3', '11', 'A', '2024-2025', '1', '2024-08-30', 3, 1, 'T012425'),
-    ('GV002', 'MON13', '1', '11', 'P', '2024-2025', '1', '2024-08-30', 4, 1, 'T012425'),
-    ('GV002', 'MON13', '1', '12', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
-    ('GV003', 'MON13', '2', '12', 'A', '2024-2025', '1', '2024-08-30', 5, 1, 'T012425'),
-    ('GV003', 'MON13', '3', '12', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
-    ('GV003', 'MON13', '4', '12', 'A', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
-    ('GV003', 'MON13', '1', '12', 'P', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425'),
-    ('GV004', 'MON13', '2', '12', 'P', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
-    ('GV004', 'MON13', '1', '10', 'A', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
-    ('GV004', 'MON13', '2', '10', 'A', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425'),
-    ('GV005', 'MON13', '3', '10', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
-    ('GV005', 'MON13', '1', '10', 'P', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
-    ('GV005', 'MON13', '2', '10', 'P', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425');
+      -- Chèn dữ liệu mẫu cho tuần T012425
+      INSERT INTO temp_thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma) VALUES
+      ('GV001', 'MON01', '1', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
+      ('GV004', 'MON01', '2', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
+      ('GV005', 'MON01', '3', '11', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
+      ('GV002', 'MON01', '1', '11', 'P', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
+      ('GV002', 'MON01', '1', '12', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
+      ('GV003', 'MON01', '2', '12', 'A', '2024-2025', '1', '2024-08-26', 2, 4, 'T012425'),
+      ('GV003', 'MON01', '3', '12', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
+      ('GV003', 'MON01', '4', '12', 'A', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
+      ('GV003', 'MON01', '1', '12', 'P', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
+      ('GV004', 'MON01', '2', '12', 'P', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
+      ('GV004', 'MON01', '1', '10', 'A', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
+      ('GV004', 'MON01', '2', '10', 'A', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
+      ('GV005', 'MON01', '3', '10', 'A', '2024-2025', '1', '2024-08-27', 1, 4, 'T012425'),
+      ('GV005', 'MON01', '1', '10', 'P', '2024-2025', '1', '2024-08-28', 1, 4, 'T012425'),
+      ('GV005', 'MON01', '2', '10', 'P', '2024-2025', '1', '2024-08-29', 1, 4, 'T012425'),
+      ('GV001', 'MON13', '1', '11', 'A', '2024-2025', '1', '2024-08-30', 1, 1, 'T012425'),
+      ('GV004', 'MON13', '2', '11', 'A', '2024-2025', '1', '2024-08-30', 2, 1, 'T012425'),
+      ('GV005', 'MON13', '3', '11', 'A', '2024-2025', '1', '2024-08-30', 3, 1, 'T012425'),
+      ('GV002', 'MON13', '1', '11', 'P', '2024-2025', '1', '2024-08-30', 4, 1, 'T012425'),
+      ('GV002', 'MON13', '1', '12', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
+      ('GV003', 'MON13', '2', '12', 'A', '2024-2025', '1', '2024-08-30', 5, 1, 'T012425'),
+      ('GV003', 'MON13', '3', '12', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
+      ('GV003', 'MON13', '4', '12', 'A', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
+      ('GV003', 'MON13', '1', '12', 'P', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425'),
+      ('GV004', 'MON13', '2', '12', 'P', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
+      ('GV004', 'MON13', '1', '10', 'A', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
+      ('GV004', 'MON13', '2', '10', 'A', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425'),
+      ('GV005', 'MON13', '3', '10', 'A', '2024-2025', '1', '2024-08-27', 5, 1, 'T012425'),
+      ('GV005', 'MON13', '1', '10', 'P', '2024-2025', '1', '2024-08-28', 5, 1, 'T012425'),
+      ('GV005', 'MON13', '2', '10', 'P', '2024-2025', '1', '2024-08-29', 5, 1, 'T012425');
 
-    -- Lặp qua các tuần từ 2 đến 18
-    WHILE week_num <= 18 DO
-        -- Tạo mã tuần (ví dụ: T022425)
-        SET week_code = CONCAT('T', LPAD(week_num, 2, '0'), '2425');
+      -- Lặp qua các tuần từ 2 đến 18
+      WHILE week_num <= 18 DO
+          -- Tạo mã tuần (ví dụ: T022425)
+          SET week_code = CONCAT('T', LPAD(week_num, 2, '0'), '2425');
 
-        -- Sử dụng cursor để lặp qua các bản ghi trong bảng tạm
-        BEGIN
-            DECLARE done INT DEFAULT FALSE;
-            DECLARE cur_GV_Ma CHAR(5);
-            DECLARE cur_M_Ma CHAR(5);
-            DECLARE cur_L_STTLop VARCHAR(2);
-            DECLARE cur_K_Khoi CHAR(2);
-            DECLARE cur_KH_KyHieu CHAR(1);
-            DECLARE cur_NH_NamHoc CHAR(9);
-            DECLARE cur_HK_HocKy CHAR(1);
-            DECLARE cur_TKB_Ngay DATE;
-            DECLARE cur_TKB_TietBD INT;
-            DECLARE cur_TKB_SoTiet INT;
-            DECLARE cur_T_Ma CHAR(7);
+          -- Sử dụng cursor để lặp qua các bản ghi trong bảng tạm
+          BEGIN
+              DECLARE done INT DEFAULT FALSE;
+              DECLARE cur_GV_Ma CHAR(5);
+              DECLARE cur_M_Ma CHAR(5);
+              DECLARE cur_L_STTLop VARCHAR(2);
+              DECLARE cur_K_Khoi CHAR(2);
+              DECLARE cur_KH_KyHieu CHAR(1);
+              DECLARE cur_NH_NamHoc CHAR(9);
+              DECLARE cur_HK_HocKy CHAR(1);
+              DECLARE cur_TKB_Ngay DATE;
+              DECLARE cur_TKB_TietBD INT;
+              DECLARE cur_TKB_SoTiet INT;
+              DECLARE cur_T_Ma CHAR(7);
 
-            DECLARE cur CURSOR FOR SELECT * FROM temp_thoikhoabieu;
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+              DECLARE cur CURSOR FOR SELECT * FROM temp_thoikhoabieu;
+              DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-            OPEN cur;
+              OPEN cur;
 
-            read_loop: LOOP
-                FETCH cur INTO cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, cur_TKB_Ngay, cur_TKB_TietBD, cur_TKB_SoTiet, cur_T_Ma;
-                IF done THEN
-                    LEAVE read_loop;
-                END IF;
+              read_loop: LOOP
+                  FETCH cur INTO cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, cur_TKB_Ngay, cur_TKB_TietBD, cur_TKB_SoTiet, cur_T_Ma;
+                  IF done THEN
+                      LEAVE read_loop;
+                  END IF;
 
-                -- Tính ngày mới
-                SET new_date = DATE_ADD(cur_TKB_Ngay, INTERVAL (week_num - 1) * 7 DAY);
+                  -- Tính ngày mới
+                  SET new_date = DATE_ADD(cur_TKB_Ngay, INTERVAL (week_num - 1) * 7 DAY);
 
-                -- Chèn bản ghi mới vào bảng thoikhoabieu
-                INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma)
-                VALUES (cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, new_date, cur_TKB_TietBD, cur_TKB_SoTiet, week_code);
-            END LOOP;
+                  -- Chèn bản ghi mới vào bảng thoikhoabieu
+                  INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma)
+                  VALUES (cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, new_date, cur_TKB_TietBD, cur_TKB_SoTiet, week_code);
+              END LOOP;
 
-            CLOSE cur;
-        END;
+              CLOSE cur;
+          END;
 
-        -- Tăng tuần
-        SET week_num = week_num + 1;
-    END WHILE;
+          -- Tăng tuần
+          SET week_num = week_num + 1;
+      END WHILE;
 
-    -- Xóa bảng tạm
-    DROP TEMPORARY TABLE temp_thoikhoabieu;
-END //
+      -- Xóa bảng tạm
+      DROP TEMPORARY TABLE temp_thoikhoabieu;
+  END //
 
-CREATE PROCEDURE GenerateSchedule2()
-BEGIN
-    DECLARE week_num INT DEFAULT 20;
-    DECLARE week_code VARCHAR(7);
-    DECLARE new_date DATE;
+  CREATE PROCEDURE GenerateSchedule2()
+  BEGIN
+      DECLARE week_num INT DEFAULT 20;
+      DECLARE week_code VARCHAR(7);
+      DECLARE new_date DATE;
 
-    -- Tạo bảng tạm để lưu dữ liệu mẫu
-    CREATE TEMPORARY TABLE temp_thoikhoabieu2 (
-        GV_Ma CHAR(5),
-        M_Ma CHAR(5),
-        L_STTLop VARCHAR(2),
-        K_Khoi CHAR(2),
-        KH_KyHieu CHAR(1),
-        NH_NamHoc CHAR(9),
-        HK_HocKy CHAR(1),
-        TKB_Ngay DATE,
-        TKB_TietBD INT,
-        TKB_SoTiet INT,
-        T_Ma CHAR(7)
-    );
+      -- Tạo bảng tạm để lưu dữ liệu mẫu
+      CREATE TEMPORARY TABLE temp_thoikhoabieu2 (
+          GV_Ma CHAR(5),
+          M_Ma CHAR(5),
+          L_STTLop VARCHAR(2),
+          K_Khoi CHAR(2),
+          KH_KyHieu CHAR(1),
+          NH_NamHoc CHAR(9),
+          HK_HocKy CHAR(1),
+          TKB_Ngay DATE,
+          TKB_TietBD INT,
+          TKB_SoTiet INT,
+          T_Ma CHAR(7)
+      );
 
-    -- Chèn dữ liệu mẫu cho tuần T012425
-    INSERT INTO temp_thoikhoabieu2 (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma) VALUES
-    ('GV001', 'MON01', '1', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'), -- Mon Toan
-    ('GV004', 'MON01', '2', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'), -- HK2 - 2024-2025
-    ('GV005', 'MON01', '3', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
-    ('GV002', 'MON01', '1', '11', 'P', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
-    ('GV002', 'MON01', '1', '12', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
-    ('GV003', 'MON01', '2', '12', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
-    ('GV003', 'MON01', '3', '12', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
-    ('GV003', 'MON01', '4', '12', 'A', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
-    ('GV003', 'MON01', '1', '12', 'P', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
-    ('GV004', 'MON01', '2', '12', 'P', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
-    ('GV004', 'MON01', '1', '10', 'A', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
-    ('GV004', 'MON01', '2', '10', 'A', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
-    ('GV005', 'MON01', '3', '10', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
-    ('GV005', 'MON01', '1', '10', 'P', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
-    ('GV005', 'MON01', '2', '10', 'P', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
-    ('GV001', 'MON13', '1', '11', 'A', '2024-2025', '2', '2025-01-02', 1, 1, 'T192425'), -- Mon Tin
-    ('GV004', 'MON13', '2', '11', 'A', '2024-2025', '2', '2025-01-02', 2, 1, 'T192425'), -- HK2 - 2024-2025
-    ('GV005', 'MON13', '3', '11', 'A', '2024-2025', '2', '2025-01-02', 3, 1, 'T192425'),
-    ('GV002', 'MON13', '1', '11', 'P', '2024-2025', '2', '2025-01-02', 4, 1, 'T192425'),
-    ('GV002', 'MON13', '1', '12', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
-    ('GV003', 'MON13', '2', '12', 'A', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
-    ('GV003', 'MON13', '3', '12', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
-    ('GV003', 'MON13', '4', '12', 'A', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
-    ('GV003', 'MON13', '1', '12', 'P', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
-    ('GV004', 'MON13', '2', '12', 'P', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
-    ('GV004', 'MON13', '1', '10', 'A', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
-    ('GV004', 'MON13', '2', '10', 'A', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
-    ('GV005', 'MON13', '3', '10', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
-    ('GV005', 'MON13', '1', '10', 'P', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
-    ('GV005', 'MON13', '2', '10', 'P', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425');
+      -- Chèn dữ liệu mẫu cho tuần T012425
+      INSERT INTO temp_thoikhoabieu2 (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma) VALUES
+      ('GV001', 'MON01', '1', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'), -- Mon Toan
+      ('GV004', 'MON01', '2', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'), -- HK2 - 2024-2025
+      ('GV005', 'MON01', '3', '11', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
+      ('GV002', 'MON01', '1', '11', 'P', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
+      ('GV002', 'MON01', '1', '12', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
+      ('GV003', 'MON01', '2', '12', 'A', '2024-2025', '2', '2024-12-30', 2, 4, 'T192425'),
+      ('GV003', 'MON01', '3', '12', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
+      ('GV003', 'MON01', '4', '12', 'A', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
+      ('GV003', 'MON01', '1', '12', 'P', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
+      ('GV004', 'MON01', '2', '12', 'P', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
+      ('GV004', 'MON01', '1', '10', 'A', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
+      ('GV004', 'MON01', '2', '10', 'A', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
+      ('GV005', 'MON01', '3', '10', 'A', '2024-2025', '2', '2024-12-31', 1, 4, 'T192425'),
+      ('GV005', 'MON01', '1', '10', 'P', '2024-2025', '2', '2025-01-01', 1, 4, 'T192425'),
+      ('GV005', 'MON01', '2', '10', 'P', '2024-2025', '2', '2025-01-02', 1, 4, 'T192425'),
+      ('GV001', 'MON13', '1', '11', 'A', '2024-2025', '2', '2025-01-02', 1, 1, 'T192425'), -- Mon Tin
+      ('GV004', 'MON13', '2', '11', 'A', '2024-2025', '2', '2025-01-02', 2, 1, 'T192425'), -- HK2 - 2024-2025
+      ('GV005', 'MON13', '3', '11', 'A', '2024-2025', '2', '2025-01-02', 3, 1, 'T192425'),
+      ('GV002', 'MON13', '1', '11', 'P', '2024-2025', '2', '2025-01-02', 4, 1, 'T192425'),
+      ('GV002', 'MON13', '1', '12', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
+      ('GV003', 'MON13', '2', '12', 'A', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
+      ('GV003', 'MON13', '3', '12', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
+      ('GV003', 'MON13', '4', '12', 'A', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
+      ('GV003', 'MON13', '1', '12', 'P', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
+      ('GV004', 'MON13', '2', '12', 'P', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
+      ('GV004', 'MON13', '1', '10', 'A', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
+      ('GV004', 'MON13', '2', '10', 'A', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425'),
+      ('GV005', 'MON13', '3', '10', 'A', '2024-2025', '2', '2024-12-31', 5, 1, 'T192425'),
+      ('GV005', 'MON13', '1', '10', 'P', '2024-2025', '2', '2025-01-01', 5, 1, 'T192425'),
+      ('GV005', 'MON13', '2', '10', 'P', '2024-2025', '2', '2025-01-02', 5, 1, 'T192425');
 
-    -- Lặp qua các tuần từ 20 đến 35
-    WHILE week_num <= 35 DO
-        -- Tạo mã tuần (ví dụ: T022425)
-        SET week_code = CONCAT('T', LPAD(week_num, 2, '0'), '2425');
+      -- Lặp qua các tuần từ 20 đến 35
+      WHILE week_num <= 35 DO
+          -- Tạo mã tuần (ví dụ: T022425)
+          SET week_code = CONCAT('T', LPAD(week_num, 2, '0'), '2425');
 
-        -- Sử dụng cursor để lặp qua các bản ghi trong bảng tạm
-        BEGIN
-            DECLARE done INT DEFAULT FALSE;
-            DECLARE cur_GV_Ma CHAR(5);
-            DECLARE cur_M_Ma CHAR(5);
-            DECLARE cur_L_STTLop VARCHAR(2);
-            DECLARE cur_K_Khoi CHAR(2);
-            DECLARE cur_KH_KyHieu CHAR(1);
-            DECLARE cur_NH_NamHoc CHAR(9);
-            DECLARE cur_HK_HocKy CHAR(1);
-            DECLARE cur_TKB_Ngay DATE;
-            DECLARE cur_TKB_TietBD INT;
-            DECLARE cur_TKB_SoTiet INT;
-            DECLARE cur_T_Ma CHAR(7);
+          -- Sử dụng cursor để lặp qua các bản ghi trong bảng tạm
+          BEGIN
+              DECLARE done INT DEFAULT FALSE;
+              DECLARE cur_GV_Ma CHAR(5);
+              DECLARE cur_M_Ma CHAR(5);
+              DECLARE cur_L_STTLop VARCHAR(2);
+              DECLARE cur_K_Khoi CHAR(2);
+              DECLARE cur_KH_KyHieu CHAR(1);
+              DECLARE cur_NH_NamHoc CHAR(9);
+              DECLARE cur_HK_HocKy CHAR(1);
+              DECLARE cur_TKB_Ngay DATE;
+              DECLARE cur_TKB_TietBD INT;
+              DECLARE cur_TKB_SoTiet INT;
+              DECLARE cur_T_Ma CHAR(7);
 
-            DECLARE cur CURSOR FOR SELECT * FROM temp_thoikhoabieu2;
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+              DECLARE cur CURSOR FOR SELECT * FROM temp_thoikhoabieu2;
+              DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-            OPEN cur;
+              OPEN cur;
 
-            read_loop: LOOP
-                FETCH cur INTO cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, cur_TKB_Ngay, cur_TKB_TietBD, cur_TKB_SoTiet, cur_T_Ma;
-                IF done THEN
-                    LEAVE read_loop;
-                END IF;
+              read_loop: LOOP
+                  FETCH cur INTO cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, cur_TKB_Ngay, cur_TKB_TietBD, cur_TKB_SoTiet, cur_T_Ma;
+                  IF done THEN
+                      LEAVE read_loop;
+                  END IF;
 
-                -- Tính ngày mới
-                SET new_date = DATE_ADD(cur_TKB_Ngay, INTERVAL (week_num - 1) * 7 DAY);
+                  -- Tính ngày mới
+                  SET new_date = DATE_ADD(cur_TKB_Ngay, INTERVAL (week_num - 19) * 7 DAY);
 
-                -- Chèn bản ghi mới vào bảng thoikhoabieu
-                INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma)
-                VALUES (cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, new_date, cur_TKB_TietBD, cur_TKB_SoTiet, week_code);
-            END LOOP;
+                  -- Chèn bản ghi mới vào bảng thoikhoabieu
+                  INSERT INTO thoikhoabieu (GV_Ma, M_Ma, L_STTLop, K_Khoi, KH_KyHieu, NH_NamHoc, HK_HocKy, TKB_Ngay, TKB_TietBD, TKB_SoTiet, T_Ma)
+                  VALUES (cur_GV_Ma, cur_M_Ma, cur_L_STTLop, cur_K_Khoi, cur_KH_KyHieu, cur_NH_NamHoc, cur_HK_HocKy, new_date, cur_TKB_TietBD, cur_TKB_SoTiet, week_code);
+              END LOOP;
 
-            CLOSE cur;
-        END;
+              CLOSE cur;
+          END;
 
-        -- Tăng tuần
-        SET week_num = week_num + 1;
-    END WHILE;
+          -- Tăng tuần
+          SET week_num = week_num + 1;
+      END WHILE;
 
-    -- Xóa bảng tạm
-    DROP TEMPORARY TABLE temp_thoikhoabieu2;
-END //
+      -- Xóa bảng tạm
+      DROP TEMPORARY TABLE temp_thoikhoabieu2;
+  END //
 
-DELIMITER ;
-CALL GenerateSchedule();
-CALL GenerateSchedule2();
-DROP PROCEDURE IF EXISTS GenerateSchedule;
-DROP PROCEDURE IF EXISTS GenerateSchedule2;
+  DELIMITER ;
+  CALL GenerateSchedule();
+  CALL GenerateSchedule2();
+  DROP PROCEDURE IF EXISTS GenerateSchedule;
+  DROP PROCEDURE IF EXISTS GenerateSchedule2;
