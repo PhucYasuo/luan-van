@@ -20,10 +20,18 @@
         <% } %>
 
         <% if (Object.values(user.permissions).some(list => list.includes('Q0005'))) { %>
-            <li class="nav-item"><a class="nav-link" href="/schedule">Lập thời khoá biểu</a></li>
+            <li class="nav-item"><a class="nav-link" href="/schedule">Sắp thời khoá biểu</a></li>
         <% } %>
 
         
         <li class="nav-item"><a class="nav-link" href="/logout">Đăng xuất</a></li>
     </ul>
 </nav>
+<script>
+    document.querySelectorAll('.navbar .nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            localStorage.clear();
+        });
+    });
+</script>
+  

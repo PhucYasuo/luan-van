@@ -6,8 +6,554 @@
     <title>Sắp thời khoá biểu</title>
     <link rel="stylesheet" href="/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .schedule-layout {
+            display: flex;
+            flex-direction: row;
+            min-height: 470px;
+            padding: 15px;
+        }
+        .sch-box-left{
+            flex: 2;
+            display: flex;
+            flex-direction: row;
+            /* background-color: aqua; */
+        }
+        .giao-vien-container{
+            flex:8.5;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .so-tiet-container{
+            flex:1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .sch-box-right{
+            flex: 8;
+            display: flex;
+            /* background-color: blueviolet; */
+            flex-direction: column;
+        }
+        .sch-sub-box-1{
+            flex: 3;
+            /* background-color: red; */
+            display: flex;
+            flex-direction: row;
+        }
+        .sch-sub-box-2{
+            flex: 7;
+            /* background-color: burlywood; */
+            display: flex;
+            flex-direction: row;
+        }
+        .left-sch-sub-box-1{
+            flex: 6.8;
+            /* background-color: blue; */
+            display: flex;
+            flex-direction: column;
+        }
+        .mid-sch-sub-box-1{
+            flex: 1;
+            /* background-color: black; */
+        }
+        .right-sch-sub-box-1{
+            flex: 2.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* background-color: brown; */
+        }
+        .left-sch-sub-box-2{
+            flex: 8;
+            /* background-color: rgb(0, 255, 94); */
+        }
+        .right-sch-sub-box-2{
+            flex: 2;
+            /* background-color: chocolate; */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .grade-box{
+            flex: 1;
+            padding: 0px 15px;
+        }
+        .class-box{
+            flex: 1;
+            padding: 0px 15px;
+            gap: 5px;
+            display: flex;
+        }
+
+    </style>
 </head>
 <body>
-    
+    <%- include('navbar') %>
+    <div class="container schedule-layout">
+        <div class="sch-box-left">
+            <div id="giaoVienContainer" class="giao-vien-container"></div>
+            <div id="soTietContainer" class="so-tiet-container"></div>
+        </div>
+        <div class="sch-box-right">
+            <div class="sch-sub-box-1">
+                <div class="left-sch-sub-box-1">
+                    <div class="grade-box">
+                        <button onclick="chonKhoi(10)">Khối 10</button>
+                        <button onclick="chonKhoi(11)">Khối 11</button>
+                        <button onclick="chonKhoi(12)">Khối 12</button>
+                    </div>
+                    <div id="class-box" class="class-box"></div>
+                </div>
+                <div class="mid-sch-sub-box-1">
+                    <p>Tuần<br>hiện tại</p>
+                    <p class="bigger"><%= tuan %></p>
+                </div>
+                <div class="right-sch-sub-box-1">
+                    <div class="counter-title">Chọn tuần</div>
+                    <div class="counter-box">
+                        <button id="prevBtn" class="arrow-btn">&#9664;</button>
+                        <span id="counterValue"><%= tuan+1 %></span>
+                        <button id="nextBtn" class="arrow-btn">&#9654;</button>
+                    </div>
+                </div>
+            </div>
+            <div class="sch-sub-box-2">
+                <div class="left-sch-sub-box-2">
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th>Buổi</th>
+                                <th>Tiết</th>
+                                <th>Thứ 2</th>
+                                <th>Thứ 3</th>
+                                <th>Thứ 4</th>
+                                <th>Thứ 5</th>
+                                <th>Thứ 6</th>
+                                <th>Thứ 7</th>
+                                <th>CN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sáng -->
+                            <tr>
+                                <td rowspan="5">Sáng</td>
+                                <td>1</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr class="bold-row">
+                                <td>5</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <!-- Chiều -->
+                            <tr>
+                                <td rowspan="5">Chiều</td>
+                                <td>6</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="right-sch-sub-box-2">
+                    <button>Lấy TKB<br>tuần trước</button>
+                    <button class="clear-timetable" onclick="deleteTimeTable()">Làm trống TKB</button>
+                    <button onclick="luuTKB()">Lưu TKB</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const tuanMin = <%= tuanMin %>;
+        const tuanMax = <%= tuanMax %>;
+
+        async function chonKhoi(khoi) {
+            try{
+                const response = await axios.get(`/class-by-grade`, {
+                    params: {
+                        khoi: khoi
+                    }
+                });
+                const danhSachLop = response.data;
+                const lopdiv = document.querySelector("#class-box");
+                lopdiv.innerHTML="";
+                const giaoVienContainer = document.getElementById("giaoVienContainer");
+                giaoVienContainer.innerHTML="";
+                const soTietContainer = document.getElementById("soTietContainer");
+                soTietContainer.innerHTML="";
+                clearTimeTable();
+                danhSachLop.forEach(lop => {
+                    const btn = document.createElement("button");
+                    btn.textContent = lop.Lop;
+
+                    btn.addEventListener('click', async () => {
+                        lopdiv.querySelectorAll("button").forEach(b => {
+                            b.classList.remove("selected");
+                        });
+                        btn.classList.add("selected");
+                        await getGiaoViens(btn.textContent);
+                    });
+
+                    lopdiv.append(btn);
+                });
+
+
+            } catch (error){
+                console.error("Lỗi khi lấy dữ liệu khối:", error);
+                alert("Không thể tải dữ liệu. Vui lòng thử lại.");
+            }
+        }
+
+        const counterValue = document.getElementById('counterValue');
+
+        document.getElementById('prevBtn').addEventListener('click', async () => {
+            let counter = parseInt(counterValue.textContent,10);
+            if(counter <= tuanMin) return;
+            counter--;
+            counterValue.textContent = counter;
+            const lopdiv = document.querySelector("#class-box");
+            const selectedBtn = lopdiv.querySelector(".selected");
+            await getGiaoViens(selectedBtn.textContent);
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', async () => {
+            let counter = parseInt(counterValue.textContent,10);
+            if(counter >= tuanMax) return;
+            counter++;
+            counterValue.textContent = counter;
+            const lopdiv = document.querySelector("#class-box");
+            const selectedBtn = lopdiv.querySelector(".selected");
+            await getGiaoViens(selectedBtn.textContent);
+        });
+
+        async function getGiaoViens(lop) {
+            const khoi = lop.substring(0, 2);   
+            const kyHieu = lop.substring(2, 3); 
+            const sttlop = lop.substring(3);     
+
+            try {
+                const response = await axios.get(`/giao-vien-class`, {
+                    params: {
+                        khoi: khoi,
+                        kyHieu: kyHieu,
+                        sttlop: sttlop,
+                    }
+                });
+                const danhSachGiaoVien = response.data;
+
+                const response2 = await axios.get(`/schedules-class`, {
+                    params: {
+                        khoi: khoi,
+                        kyHieu: kyHieu,
+                        sttlop: sttlop,
+                        tuan: counterValue.textContent
+                    }
+                });
+
+                const giaoVienContainer = document.getElementById("giaoVienContainer");
+                giaoVienContainer.innerHTML="";
+                const soTietContainer = document.getElementById("soTietContainer");
+                soTietContainer.innerHTML="";
+
+                danhSachGiaoVien.forEach(gv => {
+                    const div = document.createElement("div");
+                    const divSoTiet = document.createElement("div");
+                    let tenMon = gv.M_Ten;
+                    if(gv.M_Ten === "Giáo Dục Quốc Phòng") tenMon = "GD Quốc Phòng";
+                    if(gv.M_Ten === "Giáo Dục Công Dân") tenMon = "GD Công Dân";
+                    let tenGV = gv.GV_HoTen;
+                    if(tenGV.indexOf("Anh") != -1) tenGV = tenGV.replace("Anh","A.");
+                    div.textContent = `${tenGV} - ${tenMon}`;
+                    divSoTiet.textContent = gv.CTGD_SoTietTuan;
+                    divSoTiet.dataset.sotiet = gv.CTGD_SoTietTuan
+                    div.classList.add("draggable");
+                    div.classList.add(gv.M_Ma);
+                    divSoTiet.classList.add(gv.M_Ma);
+                    div.setAttribute("draggable", "true");
+                    div.dataset.maBtn = `${gv.GV_Ma} - ${gv.M_Ma}`;
+                    divSoTiet.dataset.masotiet = `${gv.GV_Ma} - ${gv.M_Ma}`;
+                    giaoVienContainer.appendChild(div);
+                    soTietContainer.appendChild(divSoTiet);
+                });
+
+                // Sự kiện kéo
+                document.addEventListener("dragstart", (e) => {
+                    if (e.target.classList.contains("draggable")) {
+                        e.dataTransfer.setData("text/plain", e.target.dataset.maBtn);
+                    }
+                });
+
+                // Sự kiện thả vào vùng khác
+                // document.addEventListener("dragover", (e) => {
+                //     e.preventDefault();
+
+                // });
+
+                // document.addEventListener("drop", (e) => {
+                //     e.preventDefault();
+                //     const maBtn = e.dataTransfer.getData("text/plain");
+                // });
+
+                // Lấy bảng .timetable
+                const timetable = document.querySelector('.timetable');
+
+                // Lấy tất cả các hàng trong bảng
+                const rows = timetable.querySelectorAll('tr');
+
+                // Duyệt qua từng hàng, bắt đầu từ hàng thứ 2 (bỏ qua hàng tiêu đề)
+                rows.forEach((row, rowIndex) => {
+                    // Bỏ qua hàng tiêu đề (hàng 0)
+                    if (rowIndex === 0) return;
+                    let startIndex = 1;
+                    if (rowIndex === 1 || rowIndex === 6) startIndex = 2;
+
+                    // Lấy tất cả các ô trong hàng
+                    const cells = row.querySelectorAll('td');
+
+                    // Duyệt qua từng ô, bắt đầu từ cột 3 (bỏ qua cột 1 và 2)
+                    cells.forEach((cell, cellIndex) => {
+
+                        // Chỉ thêm sự kiện cho các ô từ cột 3 trở đi (cellIndex >= 2)
+                        if (cellIndex >= startIndex) {
+                            const newCell = cell.cloneNode(false);
+                            cell.parentNode.replaceChild(newCell, cell);
+                            newCell.removeAttribute('data-macell');
+                            newCell.removeAttribute('class');
+
+                            const lopdiv = document.querySelector("#class-box");
+                            const selectedBtn = lopdiv.querySelector(".selected");
+
+
+                            
+
+                            if(selectedBtn){
+                                const key = `${counterValue.textContent}_${selectedBtn.textContent}_${cellIndex-startIndex+2}_${rowIndex}`;
+                                if(localStorage.getItem(`${key}_textContent`)!== null){
+                                    newCell.innerHTML = localStorage.getItem(`${key}_textContent`);
+                                    newCell.classList.add(localStorage.getItem(`${key}_maMon`)); // Thêm lớp màu của môn học
+                                    const maBtn = `${localStorage.getItem(`${key}_maGV`)} - ${localStorage.getItem(`${key}_maMon`)}`;
+                                    newCell.dataset.macell = `${maBtn}`; // Lưu mã giáo viên vào ô
+                                    const divSoTiet = document.querySelector(`[data-masotiet="${maBtn}"]`);
+                                    divSoTiet.textContent = parseInt(divSoTiet.textContent,10)-1;
+                                    blockDiv(maBtn);
+
+                                    const removeBtn = newCell.querySelector('.remove-btn');
+                                    removeBtn.addEventListener('click', (ev) => {
+                                        ev.stopPropagation();
+                                        localStorage.removeItem(`${key}_maGV`);
+                                        localStorage.removeItem(`${key}_maMon`);
+                                        localStorage.removeItem(`${key}_textContent`);
+                                        newCell.innerHTML = '';
+                                        newCell.removeAttribute('data-macell');
+                                        newCell.className = '';
+                                        divSoTiet.textContent = parseInt(divSoTiet.textContent,10)+1;
+                                    });
+                                }
+                            }
+                            
+
+
+                            // Thêm sự kiện dragover để cho phép thả
+                            newCell.addEventListener('dragover', (e) => {
+                                e.preventDefault(); // Cho phép thả
+                            });
+
+                            // Thêm sự kiện drop để xử lý khi thả
+                            newCell.addEventListener('drop', (e) => {
+                                e.preventDefault();
+                                const maBtn = e.dataTransfer.getData('text/plain'); // Lấy mã giáo viên
+                                const maMon = maBtn.substring(8);
+                                const maGV = maBtn.substring(0,5);
+                                const draggedElement = document.querySelector(`[data-ma-btn="${maBtn}"]`);
+                                const divSoTiet = document.querySelector(`[data-masotiet="${maBtn}"]`);
+
+                                if (draggedElement) {
+                                    const key = `${counterValue.textContent}_${selectedBtn.textContent}_${cellIndex-startIndex+2}_${rowIndex}`;
+                                    
+                                    // Lấy thông tin từ phần tử được kéo
+                                    let textContent = draggedElement.textContent;
+                                    let [tenGV,tenMon] = textContent.split("-");
+                                    tenGV=tenGV.trim();
+                                    tenMon=tenMon.trim();
+                                    if(tenMon==="GD Quốc Phòng") tenMon = "GDQP";
+                                    if(tenMon==="GD Công Dân") tenMon = "GDCD";
+
+                                    textContent = `${tenGV}\n${tenMon}`;
+                                    let ghiDe = 0;
+                                    let maBtnGhiDe;
+                                    // Kiểm tra nếu ô đã có nội dung, có thể ghi đè hoặc thông báo
+                                    if (newCell.textContent && newCell.textContent !== '') {
+                                        const confirmOverwrite = confirm('Tiết này đã có thời khoá biểu. Bạn có muốn ghi đè?');
+                                        if (!confirmOverwrite) return;
+                                        ghiDe = 1;
+                                        maBtnGhiDe = newCell.dataset.macell;
+                                    }
+
+                                    // Gán nội dung và lớp màu cho ô
+                                    newCell.innerHTML = `${textContent}<button class="remove-btn">&times;</button>`;
+                                    newCell.className = '';
+                                    newCell.classList.add(maMon); // Thêm lớp màu của môn học
+                                    newCell.dataset.macell = maBtn; // Lưu mã giáo viên vào ô
+
+                                    localStorage.setItem(`${key}_maGV`,maGV);
+                                    localStorage.setItem(`${key}_maMon`,maMon);
+                                    localStorage.setItem(`${key}_textContent`,`${textContent}<button class="remove-btn">&times;</button>`);
+                                    console.log(localStorage);
+
+                                    if(ghiDe == 0){
+                                        divSoTiet.textContent = parseInt(divSoTiet.textContent,10)-1;
+                                        blockDiv(maBtn);
+                                    } else{
+                                        const divSoTietGhiDe = document.querySelector(`[data-masotiet="${maBtnGhiDe}"]`);
+                                        divSoTiet.textContent = parseInt(divSoTiet.textContent,10)-1;
+                                        blockDiv(maBtn);
+                                        divSoTietGhiDe.textContent = parseInt(divSoTietGhiDe.textContent,10)+1;
+                                        blockDiv(maBtnGhiDe);
+                                    }
+
+
+                                    const removeBtn = newCell.querySelector('.remove-btn');
+                                    removeBtn.addEventListener('click', (ev) => {
+                                        ev.stopPropagation();
+                                        localStorage.removeItem(`${key}_maGV`);
+                                        localStorage.removeItem(`${key}_maMon`);
+                                        localStorage.removeItem(`${key}_textContent`);
+                                        newCell.innerHTML = '';
+                                        newCell.removeAttribute('data-macell');
+                                        newCell.className = '';
+                                        divSoTiet.textContent = parseInt(divSoTiet.textContent,10)+1;
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                });
+
+
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu danh sách giáo viên:", error);
+                alert("Không thể tải dữ liệu. Vui lòng thử lại.");
+            }
+        }
+
+        function blockDiv(key){
+            const divSoTiet = document.querySelector(`[data-masotiet="${key}"]`);
+            const div = document.querySelector(`[data-ma-btn="${key}"]`);
+            if(divSoTiet.textContent === "0")   div.setAttribute("draggable", "false");
+            else div.setAttribute("draggable", "true");
+        }
+
+        function clearTimeTable(){
+            const timetable = document.querySelector('.timetable');
+            const rows = timetable.querySelectorAll('tr');
+            rows.forEach((row, rowIndex) => {
+                // Bỏ qua hàng tiêu đề (hàng 0)
+                if (rowIndex === 0) return;
+                let startIndex = 1;
+                if (rowIndex === 1 || rowIndex === 6) startIndex = 2;
+
+                // Lấy tất cả các ô trong hàng
+                const cells = row.querySelectorAll('td');
+
+                // Duyệt qua từng ô, bắt đầu từ cột 3 (bỏ qua cột 1 và 2)
+                cells.forEach((cell, cellIndex) => {
+
+                    // Chỉ thêm sự kiện cho các ô từ cột 3 trở đi (cellIndex >= 2)
+                    if (cellIndex >= startIndex) {
+                        const newCell = cell.cloneNode(false);
+                        cell.parentNode.replaceChild(newCell, cell);
+                        newCell.removeAttribute('data-macell');
+                        newCell.removeAttribute('class');
+                    }
+                });
+            });
+        }
+
+        async function deleteTimeTable(){
+            const timetable = document.querySelector('.timetable');
+            const rows = timetable.querySelectorAll('tr');
+            const lopdiv = document.querySelector("#class-box");
+            const selectedBtn = lopdiv.querySelector(".selected");
+            if(selectedBtn){
+                rows.forEach((row, rowIndex) => {
+                    // Bỏ qua hàng tiêu đề (hàng 0)
+                    if (rowIndex === 0) return;
+                    let startIndex = 1;
+                    if (rowIndex === 1 || rowIndex === 6) startIndex = 2;
+
+                    // Lấy tất cả các ô trong hàng
+                    const cells = row.querySelectorAll('td');
+
+                    // Duyệt qua từng ô, bắt đầu từ cột 3 (bỏ qua cột 1 và 2)
+                    cells.forEach((cell, cellIndex) => {
+
+                        // Chỉ thêm sự kiện cho các ô từ cột 3 trở đi (cellIndex >= 2)
+                        if (cellIndex >= startIndex) {
+                            const newCell = cell.cloneNode(false);
+                            cell.parentNode.replaceChild(newCell, cell);
+                            const maBtn = newCell.dataset.macell;
+
+                            const key = `${counterValue.textContent}_${selectedBtn.textContent}_${cellIndex-startIndex+2}_${rowIndex}`;
+                            if(localStorage.getItem(`${key}_textContent`)!== null){
+                                localStorage.removeItem(`${key}_maGV`);
+                                localStorage.removeItem(`${key}_maMon`);
+                                localStorage.removeItem(`${key}_textContent`);
+                                const divSoTiet = document.querySelector(`[data-masotiet="${maBtn}"]`);
+                                divSoTiet.textContent = parseInt(divSoTiet.textContent,10)+1;
+                                blockDiv(maBtn);
+                            }
+
+                            newCell.removeAttribute('data-macell');
+                            newCell.removeAttribute('class');
+                        }
+                    });
+                });
+                await getGiaoViens(selectedBtn.textContent);
+            }
+
+        }
+
+        function luuTKB() {
+
+            const selectedBtn = document.querySelector(".selected");
+            console.log(selectedBtn);
+        
+        }
+        
+
+
+    </script>
 </body>
 </html>

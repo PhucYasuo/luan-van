@@ -1398,7 +1398,7 @@ h1 {
 .arrow-btn {
     background: none;
     border: none;
-    font-size: 40px;
+    font-size: 20px;
     color: gray;
     cursor: pointer;
     user-select: none;
@@ -1471,4 +1471,147 @@ h1 {
 .declare-week-table td[rowspan] {
     font-weight: bold;
     background-color: #f9fafb;
+}
+
+/* TRANG SẮP THỜI KHOÁ BIỂU */
+.class-box button{
+    height: 30px;
+    font-size: 15px;
+    padding: 0px 10px;
+}
+.class-box button.selected {
+    background-color: green;
+}
+
+/* .left-sch-sub-box-2{
+    padding: 15px;
+} */
+
+.left-sch-sub-box-2 table{
+    width: 95%;
+}
+
+.mid-sch-sub-box-1{
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.mid-sch-sub-box-1{
+    font: 12px;
+    font-weight: bold;
+    align-content: center;
+    text-align: center; 
+}
+.mid-sch-sub-box-1 .bigger{
+    font-size: 24px;
+}
+
+.draggable {
+    padding: 5px 10px;
+    color: white;
+    cursor: grab;
+    border-radius: 5px;
+    width: fit-content;
+    font-size: 12px;
+    width: 95%;
+}
+
+.so-tiet-container div{
+    padding: 5px 10px;
+    font-size: 12px;
+    width: fit-content;
+    border-radius: 5px;
+}
+
+.MON01{background-color: #a26360; color: #fff; }
+.MON02{background-color: #d4a29c; color: #000; }
+.MON03{background-color: #e8b298; color: #000; }
+.MON04{background-color: #edcc8b; color: #000; }
+.MON05{background-color: #fde8b3; color: #000; }
+.MON06{background-color: #bde1b3; color: #000; }
+.MON07{background-color: #9FC7B9; color: #000; }
+.MON08{background-color: #b0e1e3; color: #000; }
+.MON09{background-color: #8DD6E2; color: #000; }
+.MON10{background-color: #97ADF6; color: #000; }
+.MON11{background-color: #9194E2; color: #000; }
+.MON12{background-color: #C6A0D4; color: #000; }
+.MON13{background-color: #7f8c8d; color: #fff; }
+
+.left-sch-sub-box-2 .timetable td.MON01 { background-color: #a26360; color: #fff; }
+.left-sch-sub-box-2 .timetable td.MON02 { background-color: #d4a29c; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON03 { background-color: #e8b298; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON04 { background-color: #edcc8b; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON05 { background-color: #fde8b3; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON06 { background-color: #bde1b3; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON07 { background-color: #9FC7B9; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON08 { background-color: #b0e1e3; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON09 { background-color: #8DD6E2; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON10 { background-color: #97ADF6; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON11 { background-color: #9194E2; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON12 { background-color: #C6A0D4; color: #000; }
+.left-sch-sub-box-2 .timetable td.MON13 { background-color: #7f8c8d; color: #fff; }
+
+.left-sch-sub-box-2 .timetable td{
+    height: 40px;
+}
+
+.left-sch-sub-box-2 .timetable td:not(:nth-child(1)):not(:nth-child(2)) {
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+}
+
+.left-sch-sub-box-2 .timetable{
+    white-space: pre-line;
+}
+
+.left-sch-sub-box-2 .timetable td:not(:nth-child(1)):not(:nth-child(2)):hover {
+    background-color: #e8f0fe; /* Hiệu ứng hover cho ô có thể thả */
+}
+
+/* Đảm bảo ô có nội dung kéo thả hiển thị đúng màu */
+
+
+.bold-row td {
+    border-bottom: 3px solid black; /* đường ngang dày */
+}
+
+.grade-box button{
+    font-size: 12px;
+}
+
+.clear-timetable{
+    background-color: red !important;
+}
+
+.right-sch-sub-box-2 button {
+    width: 140px !important;
+}
+
+.timetable td {
+    position: relative;
+}
+.remove-btn { 
+    position: absolute !important;
+    top: 1px !important;
+    right: 1px !important;
+    background: transparent  !important;
+    color: black !important;
+    border: none !important;
+    font-size: 14px !important;
+    width: 16px !important;
+    height: 16px !important;
+    line-height: 4px !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+.schedule-layout div{
+    user-select: none;       /* không cho bôi đen text */
 }

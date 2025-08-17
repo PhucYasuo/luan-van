@@ -32,7 +32,10 @@ const {
 } = require('../controllers/giaoVienController');
 
 const {
-    getSchedule
+    getSchedule,
+    getClassByGrade,
+    getGiaoViens,
+    getSchedules
 } = require('../controllers/scheduleController');
 
 const {
@@ -83,6 +86,9 @@ router.get('/giao-vien-new-id', getNewId);
 
 // scheduleController
 router.get('/schedule', getSchedule);
+router.get('/class-by-grade', getClassByGrade);
+router.get('/giao-vien-class', getGiaoViens);
+router.get('/schedules-class', getSchedules);
 
 // declareController
 router.get('/declare', getDeclare);
